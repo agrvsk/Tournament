@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Bogus.DataSets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Tournament.Data.Data;
+using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
+using Tournament.Data.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tournament.Api.Controllers;
 
@@ -15,22 +20,26 @@ namespace Tournament.Api.Controllers;
 public class TournamentDetailsController : ControllerBase
 {
     private readonly TournamentContext _context;
+    private readonly IMapper _mapper;
 
-    public TournamentDetailsController(TournamentContext context)
+    public TournamentDetailsController(TournamentContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     // GET: api/TournamentDetails
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDetails>>> GetTournamentDetails()
+    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails()
     {
-        return await _context.TournamentDetails.ToListAsync();
+        //return await _context.TournamentDetails.ToListAsync();
+        var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
+        return Ok(torments);
     }
 
     // GET: api/TournamentDetails/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<TournamentDetails>> GetTournamentDetails(int id)
+    public async Task<ActionResult<TournamentDto>> GetTournamentDetails(int id)
     {
         var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
 
@@ -38,8 +47,8 @@ public class TournamentDetailsController : ControllerBase
         {
             return NotFound();
         }
-
-        return tournamentDetails;
+        var dto = _mapper.Map<TournamentDto>(tournamentDetails);
+        return Ok(dto);
     }
 
     // PUT: api/TournamentDetails/5
@@ -76,12 +85,19 @@ public class TournamentDetailsController : ControllerBase
     // POST: api/TournamentDetails
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentDetails>> PostTournamentDetails(TournamentDetails tournamentDetails)
+    public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TornamentCreateDto dto)
     {
-        _context.TournamentDetails.Add(tournamentDetails);
+        var torment = _mapper.Map<TournamentDetails>(dto);
+        _context.TournamentDetails.Add(torment);
         await _context.SaveChangesAsync();
+        var createdTorment = _mapper.Map<TournamentDto>(torment);
 
-        return CreatedAtAction("GetTournamentDetails", new { id = tournamentDetails.Id }, tournamentDetails);
+        //_context.TournamentDetails.Add(tournamentDetails);
+        //await _context.SaveChangesAsync();
+
+//      return CreatedAtAction("GetTournamentDetails", new { id = tournamentDetails.Id }, tournamentDetails);
+        return CreatedAtAction(nameof(GetTournamentDetails), new { id = torment.Id }, createdTorment);
+
     }
 
     // DELETE: api/TournamentDetails/5

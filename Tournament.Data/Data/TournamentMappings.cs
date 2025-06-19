@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
+using Tournament.Core.DTOs;
+using Tournament.Core.Entities;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+
+namespace Tournament.Data.Data;
+
+public class TournamentMappings : Profile
+{
+    public TournamentMappings()
+    {
+        CreateMap<TournamentDetails, TournamentDto>();
+        CreateMap<TournamentDetails, TornamentCreateDto>();
+
+        CreateMap<Game, GameDto>();
+    }
+}
