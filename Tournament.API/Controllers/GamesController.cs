@@ -13,8 +13,8 @@ using AutoMapper;
 
 namespace Tournament.Api.Controllers;
 
-//[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
-[Route("api/Games")]
+[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
+//[Route("api/Games")]
 [ApiController]
 public class GamesController : ControllerBase
 {
@@ -29,6 +29,7 @@ public class GamesController : ControllerBase
     }
 
     // GET: api/Games
+    // GET: api/TournamentDetails/1/Games
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Game>>> GetGame()
     {
@@ -36,11 +37,22 @@ public class GamesController : ControllerBase
         //return Ok(await _context.GameRepository.GetAllAsync());
     }
 
+
+    // GET: api/TournamentDetails/1/Games
+    //[HttpGet]
+    //public async Task<ActionResult<IEnumerable<Game>>> GetGame(string TournamentDetailsId)
+    //{
+    //    return await _context.Game.Where(g=>g.TournamentDetailsId.Equals(TournamentDetailsId)).ToListAsync();
+    //    //return Ok(await _context.GameRepository.GetAllAsync());
+    //}
+
     // GET: api/Games/5
+    // GET: api/TournamentDetails/1/Games/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Game>> GetGame(int id)
     {
-        var game = await _context.Game.FindAsync(id);
+        var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
+
         //var game = await _context.GameRepository.GetAsync(id);
 
         if (game == null)
@@ -90,7 +102,7 @@ public class GamesController : ControllerBase
         _context.Game.Add(game);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetGame", new { id = game.Id }, game);
+        return CreatedAtAction("GetGame", new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
     }
 
     // DELETE: api/Games/5

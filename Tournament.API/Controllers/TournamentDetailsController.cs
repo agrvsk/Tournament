@@ -54,14 +54,17 @@ public class TournamentDetailsController : ControllerBase
     // PUT: api/TournamentDetails/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTournamentDetails(int id, TournamentDetails tournamentDetails)
+    public async Task<IActionResult> PutTournamentDetails(int id, TournamentUpdateDto dto)
     {
-        if (id != tournamentDetails.Id)
+        if (id != dto.Id)
         {
             return BadRequest();
         }
 
-        _context.Entry(tournamentDetails).State = EntityState.Modified;
+        var tournamentExist = await _context.TournamentDetails.SingleOrDefaultAsync(t=>t.Id == id);
+
+        _mapper.Map(dto, tournamentExist);
+//        _context.Entry(tournamentExist).State = EntityState.Modified;
 
         try
         {
@@ -85,7 +88,7 @@ public class TournamentDetailsController : ControllerBase
     // POST: api/TournamentDetails
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TornamentCreateDto dto)
+    public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentCreateDto dto)
     {
         var torment = _mapper.Map<TournamentDetails>(dto);
         _context.TournamentDetails.Add(torment);

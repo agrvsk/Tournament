@@ -13,6 +13,6 @@ public interface IGameRepository
     Task<Game> GetAsync(int id);
     Task<bool> AnyAsync(int id);
     void Add(Game tournament);
-    void Update(Game tournament);
+    void UpdateAsync(Game tournament);
     void Remove(Game tournament);
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,8 +38,13 @@ public class GameRepository(TournamentContext context) : IGameRepository
         context.Game.Remove(game);
     }
 
-    public void Update(Game game)
+    public async Task UpdateAsync(Game game)
     {
-        context.Game.Update(game);
+        Game org = await GetAsync(game.Id);
+        org.Id = game.Id;
+        org.Title = game.Title;
+        org.Time = game.Time;
+        org.TournamentDetailsId = game.TournamentDetailsId;
+        //context.Game.Update(game);
     }
 }

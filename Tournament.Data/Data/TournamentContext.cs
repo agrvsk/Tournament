@@ -17,7 +17,6 @@ public class TournamentContext : DbContext
 
     //public override EntityEntry Entry(object entity)
     //{
-
     //}
 
     public DbSet<Tournament.Core.Entities.TournamentDetails> TournamentDetails { get; set; } = default!;

@@ -38,8 +38,12 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         context.TournamentDetails.Remove(tournament);
     }
 
-    public void Update(TournamentDetails tournament)
+    public async Task UpdateAsync(TournamentDetails tournament)
     {
-        context.TournamentDetails.Update(tournament);
+        TournamentDetails org = await GetAsync(tournament.Id);
+        org.Id = tournament.Id;
+        org.StartDate = tournament.StartDate;
+        org.Title = tournament.Title;
+        //context.TournamentDetails.Update(tournament);
     }
 }

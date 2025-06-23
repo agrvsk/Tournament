@@ -14,7 +14,8 @@ namespace Tournament.API
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<TournamentContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("TournamentContext") ?? throw new InvalidOperationException("Connection string 'TournamentContext' not found.")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TournamentContext") 
+                    ?? throw new InvalidOperationException("Connection string 'TournamentContext' not found.")));
 
             builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
             builder.Services.AddScoped<IGameRepository, GameRepository>();
@@ -22,9 +23,9 @@ namespace Tournament.API
 
 
             // Add services to the container.
-            builder.Services.AddControllers(opt => opt.ReturnHttpNotAcceptable = true )
-                .AddNewtonsoftJson()
-                .AddXmlDataContractSerializerFormatters();
+            builder.Services.AddControllers(opt => opt.ReturnHttpNotAcceptable = true)
+                .AddNewtonsoftJson();
+            //    .AddXmlDataContractSerializerFormatters();
 
             //builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
