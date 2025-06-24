@@ -2,45 +2,53 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Tournament.Data.Data;
+using NuGet.Protocol;
+using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using NuGet.Protocol;
-using AutoMapper;
+using Tournament.Data.Data;
 
 namespace Tournament.Api.Controllers;
 
 [Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
 //[Route("api/Games")]
 [ApiController]
-public class GamesController : ControllerBase
+public class GamesController(ITournamentUoW _context, IMapper _mapper) : ControllerBase
 {
-    private readonly TournamentContext _context;
-//    private readonly ITournamentUoW _context;
-    private readonly IMapper _mapper;
-
-    public GamesController(TournamentContext context, IMapper mapper)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
+    //private readonly TournamentContext _context;
+    //private readonly ITournamentUoW _context;
+    //private readonly IMapper _mapper;
+    //public GamesController(ITournamentUoW context, IMapper mapper)
+    //{
+    //    _context = context;
+    //    _mapper = mapper;
+    //}
+    //public GamesController(TournamentContext context, IMapper mapper)
+    //{
+    //    _context = context;
+    //    _mapper = mapper;
+    //}
 
     // GET: api/Games
     // GET: api/TournamentDetails/1/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Game>>> GetGame()
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame()
     {
-        return await _context.Game.ToListAsync();
+        //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
+        var torments =  (await _context.GameRepository.GetAllAsync()).AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
+        return Ok(torments);
     }
 
 
     // GET: api/TournamentDetails/1/Games
     //[HttpGet]
-    //public async Task<ActionResult<IEnumerable<Game>>> GetGame(string TournamentDetailsId)
+    //public async Task<ActionResult<IEnumerable<Game>>> GetGame(int TournamentDetailsId)
     //{
     //    return await _context.Game.Where(g=>g.TournamentDetailsId.Equals(TournamentDetailsId)).ToListAsync();
     //    //return Ok(await _context.GameRepository.GetAllAsync());
@@ -51,9 +59,8 @@ public class GamesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Game>> GetGame(int id)
     {
-        var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
-
-        //var game = await _context.GameRepository.GetAsync(id);
+        //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
+        var game = await _context.GameRepository.GetAsync(id);
 
         if (game == null)
         {
@@ -73,15 +80,19 @@ public class GamesController : ControllerBase
             return BadRequest();
         }
 
-        _context.Entry(game).State = EntityState.Modified;
+        //TODO
+        //_context.Entry(game).State = EntityState.Modified;
+        _context.GameRepository.SetStateModified(game);
+        
 
         try
         {
-            await _context.SaveChangesAsync();
+//          await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (! GameExists(id))
+            if (!await GameExistsAsync(id))
             {
                 return NotFound();
             }
@@ -99,8 +110,12 @@ public class GamesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Game>> PostGame(Game game)
     {
-        _context.Game.Add(game);
-        await _context.SaveChangesAsync();
+        //_context.Game.Add(game);
+        //await _context.SaveChangesAsync();
+
+        _context.GameRepository.Add(game);
+        await _context.CompleteAsync();
+ 
 
         return CreatedAtAction("GetGame", new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
     }
@@ -109,20 +124,26 @@ public class GamesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-        var game = await _context.Game.FindAsync(id);
+//        var game = await _context.Game.FindAsync(id);
+        var game = await _context.GameRepository.GetAsync(id);
+
         if (game == null)
         {
             return NotFound();
         }
 
-        _context.Game.Remove(game);
-        await _context.SaveChangesAsync();
+        //_context.Game.Remove(game);
+        _context.GameRepository.Remove(game);
+
+        //await _context.SaveChangesAsync();
+        await _context.CompleteAsync();
 
         return NoContent();
     }
 
-    private  bool GameExists(int id)
+    private  async Task<bool> GameExistsAsync(int id)
     {
-        return  _context.Game.Any(o=>o.Id == id);
+        //return  _context.Game.Any(o=>o.Id == id);
+        return await _context.GameRepository.AnyAsync(id);
     }
 }

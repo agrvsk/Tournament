@@ -12,7 +12,9 @@ public interface IGameRepository
     Task<IEnumerable<Game>> GetAllAsync();
     Task<Game> GetAsync(int id);
     Task<bool> AnyAsync(int id);
-    void Add(Game tournament);
-    void UpdateAsync(Game tournament);
-    void Remove(Game tournament);
+    void Add(Game game);
+    void Update(Game game);
+    void Remove(Game game);
+
+    void SetStateModified(Game game);
 }

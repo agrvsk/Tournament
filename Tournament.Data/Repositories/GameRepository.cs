@@ -37,14 +37,26 @@ public class GameRepository(TournamentContext context) : IGameRepository
     {
         context.Game.Remove(game);
     }
+    //TODO
+    //public async Task UpdateAsync(Game game)
+    //{
+    //    Game org = await GetAsync(game.Id);
+    //    org.Id = game.Id;
+    //    org.Title = game.Title;
+    //    org.Time = game.Time;
+    //    org.TournamentDetailsId = game.TournamentDetailsId;
+    //    //context.Game.Update(game);
+    //}
 
-    public async Task UpdateAsync(Game game)
+    public void Update(Game game)
     {
-        Game org = await GetAsync(game.Id);
-        org.Id = game.Id;
-        org.Title = game.Title;
-        org.Time = game.Time;
-        org.TournamentDetailsId = game.TournamentDetailsId;
-        //context.Game.Update(game);
+        context.Game.Update(game);
     }
+
+    public void SetStateModified(Game game)
+    {
+        context.Entry(game).State = EntityState.Modified;
+    }
+    
+
 }

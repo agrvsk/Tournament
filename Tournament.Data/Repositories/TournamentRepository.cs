@@ -38,12 +38,22 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         context.TournamentDetails.Remove(tournament);
     }
 
-    public async Task UpdateAsync(TournamentDetails tournament)
+    //public async Task UpdateAsync(TournamentDetails tournament)
+    //{
+    //    TournamentDetails org = await GetAsync(tournament.Id);
+    //    org.Id = tournament.Id;
+    //    org.StartDate = tournament.StartDate;
+    //    org.Title = tournament.Title;
+    //    //context.TournamentDetails.Update(tournament);
+    //}
+
+    public void Update(TournamentDetails tournament)
     {
-        TournamentDetails org = await GetAsync(tournament.Id);
-        org.Id = tournament.Id;
-        org.StartDate = tournament.StartDate;
-        org.Title = tournament.Title;
-        //context.TournamentDetails.Update(tournament);
+        context.TournamentDetails.Update(tournament);
+    }
+
+    public void SetStateModified(TournamentDetails tournament)
+    {
+        context.Entry(tournament).State = EntityState.Modified;
     }
 }
