@@ -42,11 +42,11 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     // GET: api/Games
     // GET: api/TournamentDetails/1/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame()
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort)
     {
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
-        var allGames = await _context.GameRepository.GetAllAsync();
+        var allGames = await _context.GameRepository.GetAllAsync(sort);
         if (allGames == null || allGames.IsNullOrEmpty()) return NotFound();
 
         //var dtos = allGames.AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
@@ -135,13 +135,23 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     // POST: api/Games
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Game>> PostGame(GameCreateDto dto)
+    //[Route("/api/TournamentDetails/{TournamentDetailsId}/Games")]
+    public async Task<ActionResult<Game>> PostGame( GameCreateDto dto)
     {
+        //Console.WriteLine("\n\n\nTournamentDetailsId: " + TournamentDetailsId+"\n\n\n");
+        //Console.WriteLine("\n\n\nTournamentDetailsId: " + dto.TournamentDetailsId + "\n\n\n");
+        
+        //dto.TournamentDetailsId = TournamentDetailsId;
+
         TryValidateModel(dto);
         if (!ModelState.IsValid)
         {
             return BadRequest();
         }
+
+//        var tourment = await _context.TournamentRepository.GetAsync(dto.TournamentDetailsId);
+//        if(tourment == null) 
+//            return NotFound($"Tournament with Id {dto.TournamentDetailsId} was not found.");
 
         //_context.Game.Add(game);
         //await _context.SaveChangesAsync();

@@ -23,11 +23,22 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         return await context.TournamentDetails.AnyAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<TournamentDetails>> GetAllAsync(bool showGames = false)
+    public async Task<IEnumerable<TournamentDetails>> GetAllAsync(bool showGames = false, bool sort = false)
     {
-        return showGames ? await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync()
-                         : await context.TournamentDetails.ToArrayAsync();
+        return showGames ? SortFunc( await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync(),sort)
+                         : SortFunc( await context.TournamentDetails.ToArrayAsync(), sort);
     }
+
+    public IEnumerable<TournamentDetails> SortFunc(IEnumerable<TournamentDetails>  items, bool Sort)
+    {
+        return Sort
+        ? items.OrderBy(x => x.Title)
+        : items;
+    }
+
+
+
+
 
     public async Task<TournamentDetails> GetAsync(int id, bool showGames = false)
     {

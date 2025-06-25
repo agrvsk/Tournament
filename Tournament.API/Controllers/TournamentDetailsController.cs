@@ -42,12 +42,12 @@ public class TournamentDetailsController : ControllerBase
 
     // GET: api/TournamentDetails
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames)
+    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames, bool sort)
     {
         //return await _context.TournamentDetails.ToListAsync();
         //var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
-        var torments = showGames ? await _context.TournamentRepository.GetAllAsync(true)
-                                 : await _context.TournamentRepository.GetAllAsync();
+        //var torments = showGames ? await _context.TournamentRepository.GetAllAsync(showGames, sort)
+        var torments = await _context.TournamentRepository.GetAllAsync(showGames, sort);
         if (torments == null || torments.IsNullOrEmpty()) return NotFound();
 
         //var dto = torments.AsQueryable().ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToList();

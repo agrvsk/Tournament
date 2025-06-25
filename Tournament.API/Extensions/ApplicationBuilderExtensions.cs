@@ -57,8 +57,12 @@ public static class ApplicationBuilderExtensions
 
     }
 
+    static DateTime nextGame = DateTime.Now;
+
     private static ICollection<Game> GenerateGames(int nrOfGames, DateTime dt )
     {
+        nextGame = dt;
+        DateTime slutdt = dt.AddMonths(3);
         //DateTime[] idag = { dag };
 
         //string[] positions = { "Developer", "Tester", "Manager" };
@@ -69,15 +73,17 @@ public static class ApplicationBuilderExtensions
             //e.Time = f.PickRandom(idag);
 
 
-            e.Time = DateOnly.FromDateTime(dt)
-            .ToDateTime(f.Date.BetweenTimeOnly(
-                TimeOnly.Parse("00:00 AM"),
-                TimeOnly.Parse("11:59 PM")
-             ));
+            //e.Time = DateOnly.FromDateTime(dt)
+            //.ToDateTime(f.Date.BetweenTimeOnly(
+            //    TimeOnly.Parse("00:00 AM"),
+            //    TimeOnly.Parse("11:59 PM")
+            // ));
+            e.Time = nextGame;
+            nextGame = nextGame.AddDays(1);
 
             //e.Time = f.Date.BetweenDateOnly(
-            //DateOnly.FromDateTime(DateTime.Now),
-            //DateOnly.FromDateTime(DateTime.Now.AddYears(10))
+            //DateOnly.FromDateTime(dt),
+            //DateOnly.FromDateTime(slutdt)
             //).ToDateTime(f.Date.BetweenTimeOnly(
             //    TimeOnly.Parse("00:00 AM"),
             //    TimeOnly.Parse("11:59 PM")

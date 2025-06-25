@@ -23,9 +23,10 @@ public class GameRepository(TournamentContext context) : IGameRepository
         return await context.Game.AnyAsync(o => o.Id == id);
     }
 
-    public async Task<IEnumerable<Game>> GetAllAsync()
+    public async Task<IEnumerable<Game>> GetAllAsync(bool sort=false)
     {
-        return await context.Game.ToListAsync();
+        return sort ? await context.Game.OrderBy(o => o.Title).ToListAsync() 
+                    : await context.Game.ToListAsync();
     }
 
     public async Task<Game> GetAsync(int id)
