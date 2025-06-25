@@ -14,6 +14,6 @@ public record GameUpdateDto
     [Required(ErrorMessage = "Title is a required field.")]
     [MaxLength(25, ErrorMessage = "Maximum length for Title is 25 characters.")]
     public string Title { get; init; }
-    public DateTime StartDate { get; init; }
+    public DateTime Time { get; init; }
 
 }

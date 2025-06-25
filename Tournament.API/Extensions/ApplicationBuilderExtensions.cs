@@ -1,5 +1,6 @@
 ﻿using System;
 using Bogus;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Tournament.Core.Entities;
 using Tournament.Data.Data;
@@ -24,8 +25,8 @@ public static class ApplicationBuilderExtensions
 
             try
             {
-                var companies = GenerateTournaments(4);
-                db.AddRange(companies);
+                var torments = GenerateTournaments(4);
+                db.AddRange(torments);
                 await db.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -43,38 +44,47 @@ public static class ApplicationBuilderExtensions
         var faker = new Faker<TournamentDetails>("sv").Rules((f, c) =>
         {
             c.Title = $"{f.Address.City()} Open";
+
             c.StartDate = f.Date.BetweenDateOnly(
                 DateOnly.FromDateTime(DateTime.Now),
                 DateOnly.FromDateTime(DateTime.Now.AddYears(10))
                 ).ToDateTime(TimeOnly.Parse("00:00 PM"));
-            c.Games = GenerateGames(f.Random.Int(min: 2, max: 10) );
+
+            c.Games = GenerateGames(f.Random.Int(min: 2, max: 10), c.StartDate );
         });
 
         return faker.Generate(nrOfTournaments);
 
     }
 
-    private static ICollection<Game> GenerateGames(int nrOfGames)
+    private static ICollection<Game> GenerateGames(int nrOfGames, DateTime dt )
     {
+        //DateTime[] idag = { dag };
+
         //string[] positions = { "Developer", "Tester", "Manager" };
         var faker = new Faker<Game>("sv").Rules((f, e) =>
         {
             e.Title = $"{f.Address.City()} Cup";
 
-            e.Time = f.Date.BetweenDateOnly(
-            DateOnly.FromDateTime(DateTime.Now),
-            DateOnly.FromDateTime(DateTime.Now.AddYears(10))
-            ).ToDateTime(f.Date.BetweenTimeOnly(
+            //e.Time = f.PickRandom(idag);
+
+
+            e.Time = DateOnly.FromDateTime(dt)
+            .ToDateTime(f.Date.BetweenTimeOnly(
                 TimeOnly.Parse("00:00 AM"),
                 TimeOnly.Parse("11:59 PM")
-                ));
+             ));
 
-
-            //e.Time = DateOnly.FromDateTime(dag)
-            //.ToDateTime(f.Date.BetweenTimeOnly(
+            //e.Time = f.Date.BetweenDateOnly(
+            //DateOnly.FromDateTime(DateTime.Now),
+            //DateOnly.FromDateTime(DateTime.Now.AddYears(10))
+            //).ToDateTime(f.Date.BetweenTimeOnly(
             //    TimeOnly.Parse("00:00 AM"),
             //    TimeOnly.Parse("11:59 PM")
             //    ));
+
+
+
 
 
             //e.Name = f.Person.FullName;

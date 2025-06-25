@@ -19,8 +19,8 @@ using Tournament.Data.Data;
 
 namespace Tournament.Api.Controllers;
 
-[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
-//[Route("api/Games")]
+//[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
+[Route("api/Games")]
 [ApiController]
 public class GamesController(ITournamentUoW _context, IMapper _mapper) : ControllerBase
 {
@@ -38,6 +38,7 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     //    _mapper = mapper;
     //}
 
+
     // GET: api/Games
     // GET: api/TournamentDetails/1/Games
     [HttpGet]
@@ -54,29 +55,33 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     }
 
 
-    // GET: api/TournamentDetails/1/Games
-    //[HttpGet]
-    //public async Task<ActionResult<IEnumerable<Game>>> GetGame(int TournamentDetailsId)
-    //{
-    //    return await _context.Game.Where(g=>g.TournamentDetailsId.Equals(TournamentDetailsId)).ToListAsync();
-    //    //return Ok(await _context.GameRepository.GetAllAsync());
-    //}
-
     // GET: api/Games/5
     // GET: api/TournamentDetails/1/Games/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<GameDto>> GetGame(int id)
+    [HttpGet("{title}")]
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title)
     {
-        //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
-        var game = await _context.GameRepository.GetAsync(id);
+        var game = await _context.GameRepository.GetByTitleAsync(title);
 
         if (game == null)
         {
             return NotFound();
         }
-        var dto = _mapper.Map<GameDto>(game);
-        return Ok(dto);
+        var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
+        return Ok(dtos);
     }
+
+    //[HttpGet("{id}")]
+    //public async Task<ActionResult<GameDto>> GetGame(int id)
+    //{
+    //    //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
+    //    var game = await _context.GameRepository.GetAsync(id);
+    //    if (game == null)
+    //    {
+    //        return NotFound();
+    //    }
+    //    var dto = _mapper.Map<GameDto>(game);
+    //    return Ok(dto);
+    //}
 
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -156,7 +161,8 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         }
         var createdGame = _mapper.Map<GameDto>(game);
 
-        return CreatedAtAction(nameof(GetGame), new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
+        //return CreatedAtAction(nameof(GetGame), new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
+        return CreatedAtAction(nameof(GetGame), new { id = game.Id }, game);
     }
 
     // DELETE: api/Games/5

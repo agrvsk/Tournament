@@ -9,6 +9,6 @@ namespace Tournament.Core.DTOs;
 public record GameDto
 {
     public string Title { get; init; } 
-    public DateTime StartDate { get; init; } 
+    public DateTime Time { get; init; } 
 
 }

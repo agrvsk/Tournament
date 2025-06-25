@@ -32,6 +32,11 @@ public class GameRepository(TournamentContext context) : IGameRepository
     {
         return await context.Game.SingleOrDefaultAsync(o => o.Id == id);
     }
+    public async Task<IEnumerable<Game>> GetByTitleAsync(string title)
+    {
+        return await context.Game.Where(o => o.Title == title).ToListAsync();
+    }
+
 
     public void Remove(Game game)
     {
