@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Bogus.DataSets;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
@@ -41,8 +45,12 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     {
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
-        var torments =  (await _context.GameRepository.GetAllAsync()).AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
-        return Ok(torments);
+        var allGames = await _context.GameRepository.GetAllAsync();
+        if (allGames == null || allGames.IsNullOrEmpty()) return NotFound();
+
+        //var dtos = allGames.AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
+        var dtos = _mapper.Map<IEnumerable<GameDto>>(allGames);
+        return Ok(dtos);
     }
 
 
@@ -57,7 +65,7 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     // GET: api/Games/5
     // GET: api/TournamentDetails/1/Games/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Game>> GetGame(int id)
+    public async Task<ActionResult<GameDto>> GetGame(int id)
     {
         //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
         var game = await _context.GameRepository.GetAsync(id);
@@ -66,23 +74,34 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         {
             return NotFound();
         }
-
-        return Ok(game);
+        var dto = _mapper.Map<GameDto>(game);
+        return Ok(dto);
     }
 
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutGame(int id, Game game)
+    public async Task<IActionResult> PutGame(int id, GameUpdateDto dto)
     {
-        if (id != game.Id)
+        if (id != dto.Id)
         {
             return BadRequest();
         }
 
-        //TODO
+        TryValidateModel(dto);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
+        var gameExist = await _context.GameRepository.GetAsync(id);
+        if(gameExist == null) return NotFound();
+
+        _mapper.Map(dto, gameExist);
+
+        //När Behövs följande????
         //_context.Entry(game).State = EntityState.Modified;
-        _context.GameRepository.SetStateModified(game);
+        _context.GameRepository.SetStateModified(gameExist);
         
 
         try
@@ -98,26 +117,46 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
             }
             else
             {
-                throw;
+                //throw;
+                return StatusCode(500);
             }
         }
-
+        //var createdGame = _mapper.Map<GameDto>(gameExist);
         return NoContent();
+        //return CreatedAtAction(nameof(GetGame), new { id = gameExist.Id, TournamentDetailsId = gameExist.TournamentDetailsId }, createdGame);
+
     }
 
     // POST: api/Games
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Game>> PostGame(Game game)
+    public async Task<ActionResult<Game>> PostGame(GameCreateDto dto)
     {
+        TryValidateModel(dto);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         //_context.Game.Add(game);
         //await _context.SaveChangesAsync();
+        var game = _mapper.Map<Game>(dto);
 
         _context.GameRepository.Add(game);
-        await _context.CompleteAsync();
- 
 
-        return CreatedAtAction("GetGame", new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
+        try
+        {
+            //await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
+        }
+        catch (DBConcurrencyException)
+        {
+            //throw;
+            return StatusCode(500);
+        }
+        var createdGame = _mapper.Map<GameDto>(game);
+
+        return CreatedAtAction(nameof(GetGame), new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
     }
 
     // DELETE: api/Games/5
@@ -135,8 +174,16 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         //_context.Game.Remove(game);
         _context.GameRepository.Remove(game);
 
-        //await _context.SaveChangesAsync();
-        await _context.CompleteAsync();
+        try
+        {
+            //await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
+        }
+        catch (DBConcurrencyException)
+        {
+            //throw;
+            return StatusCode(500);
+        }
 
         return NoContent();
     }

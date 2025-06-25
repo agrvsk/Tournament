@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 namespace Tournament.Core.DTOs;
 
-public record TournamentUpdateDto
+public record GameUpdateDto
 {
     public int Id { get; init; }
 
     [Required(ErrorMessage = "Title is a required field.")]
     [MaxLength(25, ErrorMessage = "Maximum length for Title is 25 characters.")]
-    public string Title { get; init; } = null!;
+    public string Title { get; init; }
     public DateTime StartDate { get; init; }
-//    public DateTime EndDate { get; init; } // = StartDate.AddMonths(3);
 
 }

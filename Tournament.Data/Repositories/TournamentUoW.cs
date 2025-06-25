@@ -10,26 +10,23 @@ using Tournament.Data.Data;
 
 namespace Tournament.Data.Repositories;
 
-public class TournamentUoW //(TournamentContext context, 
-//    ITournamentRepository TournamentRepository,
-//    IGameRepository GameRepository) 
+public class TournamentUoW (TournamentContext _context, 
+    ITournamentRepository tournamentRepository,
+    IGameRepository gameRepository) 
     : ITournamentUoW
 {
-    //public ITournamentRepository TournamentRepository => TournamentRepository;
-    //public IGameRepository GameRepository => GameRepository;
+    public ITournamentRepository TournamentRepository => tournamentRepository;
+    public IGameRepository GameRepository => gameRepository;
 
-    private readonly TournamentContext _context;
-    public ITournamentRepository TournamentRepository { get; }
-    public IGameRepository GameRepository { get; }
-
-    // Fler repos
-
-    public TournamentUoW(TournamentContext context)
-    {
-        _context = context;
-        TournamentRepository = new TournamentRepository(context);
-        GameRepository = new GameRepository(context);
-    }
+    //private readonly TournamentContext _context;
+    //public ITournamentRepository TournamentRepository { get; }
+    //public IGameRepository GameRepository { get; }
+    //public TournamentUoW(TournamentContext context)
+    //{
+    //    _context = context;
+    //    TournamentRepository = new TournamentRepository(context);
+    //    GameRepository = new GameRepository(context);
+    //}
 
 
     public async Task CompleteAsync()

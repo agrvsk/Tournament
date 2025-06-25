@@ -53,8 +53,9 @@ public class GameRepository(TournamentContext context) : IGameRepository
         context.Game.Update(game);
     }
 
-    public void SetStateModified(Game game)
+    public void SetStateModified(Game? game)
     {
+        if(game != null)
         context.Entry(game).State = EntityState.Modified;
     }
     

@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Bogus.DataSets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
@@ -37,23 +42,27 @@ public class TournamentDetailsController : ControllerBase
 
     // GET: api/TournamentDetails
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails()
+    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames)
     {
         //return await _context.TournamentDetails.ToListAsync();
         //var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
+        var torments = showGames ? await _context.TournamentRepository.GetAllAsync(true)
+                                 : await _context.TournamentRepository.GetAllAsync();
+        if (torments == null || torments.IsNullOrEmpty()) return NotFound();
 
-        var torments = (await _context.TournamentRepository.GetAllAsync()).AsQueryable();
-        var dto = torments.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToList();
-        
+        //var dto = torments.AsQueryable().ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToList();
+        var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
         return Ok(dto);
     }
 
+
     // GET: api/TournamentDetails/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<TournamentDto>> GetTournamentDetails(int id)
+    public async Task<ActionResult<TournamentDto>> GetTournamentDetails(int id, bool showGames)
     {
-    //    var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
-        var tournamentDetails = await _context.TournamentRepository.GetAsync(id);
+        //    var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
+        var tournamentDetails = showGames ? await _context.TournamentRepository.GetAsync(id, true)
+                                          : await _context.TournamentRepository.GetAsync(id);
 
         if (tournamentDetails == null)
         {
@@ -66,6 +75,8 @@ public class TournamentDetailsController : ControllerBase
     // PUT: api/TournamentDetails/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
+    //Om jag vill visa den ändrade posten?
+    //    public async Task<ActionResult<TournamentDto>> PutTournamentDetails(int id, TournamentUpdateDto dto)
     public async Task<IActionResult> PutTournamentDetails(int id, TournamentUpdateDto dto)
     {
         if (id != dto.Id)
@@ -73,11 +84,23 @@ public class TournamentDetailsController : ControllerBase
             return BadRequest();
         }
 
+        TryValidateModel(dto);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         //var tournamentExist = await _context.TournamentDetails.SingleOrDefaultAsync(t=>t.Id == id);
         var tournamentExist = await _context.TournamentRepository.GetAsync(id);
+        if (tournamentExist == null) return NotFound();
 
         _mapper.Map(dto, tournamentExist);
-//        _context.Entry(tournamentExist).State = EntityState.Modified;
+
+        //När Behövs följande????
+        //      _context.Entry(tournamentExist).State = EntityState.Modified;
+        //försök eftersom ovanstående ej finns i UoW
+        _context.TournamentRepository.SetStateModified(tournamentExist);
+
 
         try
         {
@@ -86,17 +109,24 @@ public class TournamentDetailsController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (! await TournamentDetailsExists(id))
+            if (!await TournamentDetailsExists(id))
             {
                 return NotFound();
             }
             else
             {
-                throw;
+                //throw;
+                return StatusCode(500);
             }
         }
-
         return NoContent();
+
+        //Om jag vill visa den ändradee posten.
+        //var createdTorment = _mapper.Map<TournamentDto>(tournamentExist);
+        
+        //UpdatedAtAction?
+        //return CreatedAtAction(nameof(GetTournamentDetails), new { id = tournamentExist.Id }, createdTorment);
+        //return AcceptedAtAction(nameof(GetTournamentDetails), new { id = tournamentExist.Id }, createdTorment);
     }
 
     // POST: api/TournamentDetails
@@ -104,17 +134,34 @@ public class TournamentDetailsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentCreateDto dto)
     {
+        TryValidateModel(dto);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         var torment = _mapper.Map<TournamentDetails>(dto);
+
         //_context.TournamentDetails.Add(torment);
         _context.TournamentRepository.Add(torment);
-        //await _context.SaveChangesAsync();
-        await _context.CompleteAsync();
+
+        try
+        {
+            //await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
+        }
+        catch (DBConcurrencyException)
+        {
+            //throw;
+            return StatusCode(500);
+        }
+
         var createdTorment = _mapper.Map<TournamentDto>(torment);
 
         //_context.TournamentDetails.Add(tournamentDetails);
         //await _context.SaveChangesAsync();
 
-//      return CreatedAtAction("GetTournamentDetails", new { id = tournamentDetails.Id }, tournamentDetails);
+        //      return CreatedAtAction("GetTournamentDetails", new { id = tournamentDetails.Id }, tournamentDetails);
         return CreatedAtAction(nameof(GetTournamentDetails), new { id = torment.Id }, createdTorment);
 
     }
@@ -123,7 +170,7 @@ public class TournamentDetailsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTournamentDetails(int id)
     {
-     //   var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
+        //   var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
         var tournamentDetails = await _context.TournamentRepository.GetAsync(id);
 
         if (tournamentDetails == null)
@@ -131,15 +178,68 @@ public class TournamentDetailsController : ControllerBase
             return NotFound();
         }
 
-//        _context.TournamentDetails.Remove(tournamentDetails);
+        //        _context.TournamentDetails.Remove(tournamentDetails);
         _context.TournamentRepository.Remove(tournamentDetails);
 
-
-        //await _context.SaveChangesAsync();
-        await _context.CompleteAsync();
+        try
+        {
+            //await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
+        }
+        catch (DBConcurrencyException)
+        {
+            //throw;
+            return StatusCode(500);
+        }
 
         return NoContent();
     }
+
+    [HttpPatch("{tournamentId}")]
+    public async Task<ActionResult<TournamentDto>> PatchTournament(int tournamentId, JsonPatchDocument<TournamentUpdateDto> patchDocument)
+    {
+        if (patchDocument is null) return BadRequest("No patchdocument");
+
+        var tournamentToPatch = await _context.TournamentRepository.GetAsync(tournamentId);
+        if (tournamentToPatch == null) return NotFound("Tournament does not exist");
+
+        //var employeeToPatch = await _context.Employees.FirstOrDefaultAsync(e => e.Id.Equals(id) && e.CompanyId.Equals(companyId));
+        //if (employeeToPatch == null) return NotFound("Employee does not exist");
+
+        var dto = _mapper.Map<TournamentUpdateDto>(tournamentToPatch);
+        patchDocument.ApplyTo(dto, ModelState); // Här patchas dto:n ihop med patchdokumentet.
+        TryValidateModel(dto);
+
+        if (!ModelState.IsValid)
+        {
+            return UnprocessableEntity(ModelState);
+        }
+
+        _mapper.Map(dto, tournamentToPatch);
+
+        try
+        {
+            //await _context.SaveChangesAsync();
+            await _context.CompleteAsync();
+        }
+        catch (DBConcurrencyException)
+        {
+            //throw;
+            return StatusCode(500);
+        }
+
+        var returDto = _mapper.Map<TournamentDto>(tournamentToPatch);
+
+        //return NoContent();
+        return CreatedAtAction (nameof(GetTournamentDetails), new { id = tournamentToPatch.Id }, returDto);
+        //return AcceptedAtAction(nameof(GetTournamentDetails), new { id = tournamentToPatch.Id }, returDto);
+        //ChangedAtAction / UpdatedAt ???
+
+
+    }
+
+
+
 
     private async Task<bool> TournamentDetailsExists(int id)
     {

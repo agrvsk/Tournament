@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
@@ -23,14 +23,16 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         return await context.TournamentDetails.AnyAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<TournamentDetails>> GetAllAsync()
+    public async Task<IEnumerable<TournamentDetails>> GetAllAsync(bool showGames = false)
     {
-        return await context.TournamentDetails.ToArrayAsync();
+        return showGames ? await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync()
+                         : await context.TournamentDetails.ToArrayAsync();
     }
 
-    public async Task<TournamentDetails> GetAsync(int id)
+    public async Task<TournamentDetails> GetAsync(int id, bool showGames = false)
     {
-        return await context.TournamentDetails.SingleOrDefaultAsync(x => x.Id == id);
+        return showGames ? await context.TournamentDetails.Include(c => c.Games).SingleOrDefaultAsync(x => x.Id == id)
+                         : await context.TournamentDetails.SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public void Remove(TournamentDetails tournament)
@@ -52,8 +54,9 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         context.TournamentDetails.Update(tournament);
     }
 
-    public void SetStateModified(TournamentDetails tournament)
+    public void SetStateModified(TournamentDetails? tournament)
     {
+        if(tournament != null)
         context.Entry(tournament).State = EntityState.Modified;
     }
 }
