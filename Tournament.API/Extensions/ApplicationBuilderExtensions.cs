@@ -62,15 +62,15 @@ public static class ApplicationBuilderExtensions
     private static ICollection<Game> GenerateGames(int nrOfGames, DateTime dt )
     {
         nextGame = dt;
-        DateTime slutdt = dt.AddMonths(3);
-        //DateTime[] idag = { dag };
 
+        //DateTime slutdt = dt.AddMonths(3);
+        //DateTime[] tPeriod = { dag };
         //string[] positions = { "Developer", "Tester", "Manager" };
+
         var faker = new Faker<Game>("sv").Rules((f, e) =>
         {
             e.Title = $"{f.Address.City()} Cup";
 
-            //e.Time = f.PickRandom(idag);
 
 
             //e.Time = DateOnly.FromDateTime(dt)

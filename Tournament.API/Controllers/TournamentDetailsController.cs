@@ -40,20 +40,28 @@ public class TournamentDetailsController : ControllerBase
     //    _mapper = mapper;
     //}
 
+    public class FilterObject
+    {
+        public bool ShowGames { get; set; }
+        public bool Sort { get; set; }
+    }
     // GET: api/TournamentDetails
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames, bool sort)
+    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery] FilterObject fi)
+  //public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames, bool sort)
     {
         //return await _context.TournamentDetails.ToListAsync();
         //var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
         //var torments = showGames ? await _context.TournamentRepository.GetAllAsync(showGames, sort)
-        var torments = await _context.TournamentRepository.GetAllAsync(showGames, sort);
+        var torments = await _context.TournamentRepository.GetAllAsync(fi.ShowGames, fi.Sort);
         if (torments == null || torments.IsNullOrEmpty()) return NotFound();
 
         //var dto = torments.AsQueryable().ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToList();
         var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
         return Ok(dto);
     }
+
+
 
 
     // GET: api/TournamentDetails/5
@@ -121,12 +129,12 @@ public class TournamentDetailsController : ControllerBase
         }
         return NoContent();
 
-        //Om jag vill visa den ändradee posten.
+        //Om jag skulle vilja returnera den ändrade posten.
         //var createdTorment = _mapper.Map<TournamentDto>(tournamentExist);
-        
-        //UpdatedAtAction?
         //return CreatedAtAction(nameof(GetTournamentDetails), new { id = tournamentExist.Id }, createdTorment);
         //return AcceptedAtAction(nameof(GetTournamentDetails), new { id = tournamentExist.Id }, createdTorment);
+        //UpdatedAtAction?
+
     }
 
     // POST: api/TournamentDetails
@@ -203,16 +211,14 @@ public class TournamentDetailsController : ControllerBase
         var tournamentToPatch = await _context.TournamentRepository.GetAsync(tournamentId);
         if (tournamentToPatch == null) return NotFound("Tournament does not exist");
 
-        //var employeeToPatch = await _context.Employees.FirstOrDefaultAsync(e => e.Id.Equals(id) && e.CompanyId.Equals(companyId));
-        //if (employeeToPatch == null) return NotFound("Employee does not exist");
-
         var dto = _mapper.Map<TournamentUpdateDto>(tournamentToPatch);
         patchDocument.ApplyTo(dto, ModelState); // Här patchas dto:n ihop med patchdokumentet.
         TryValidateModel(dto);
 
         if (!ModelState.IsValid)
         {
-            return UnprocessableEntity(ModelState);
+            //return BadRequest(); //400
+            return UnprocessableEntity(ModelState); //422
         }
 
         _mapper.Map(dto, tournamentToPatch);

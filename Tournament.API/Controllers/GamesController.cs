@@ -40,7 +40,6 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
 
 
     // GET: api/Games
-    // GET: api/TournamentDetails/1/Games
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort)
     {
@@ -55,9 +54,8 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     }
 
 
-    // GET: api/Games/5
-    // GET: api/TournamentDetails/1/Games/5
-    [HttpGet("{title}")]
+    // GET: api/Games/T
+    [HttpGet("T")]
     public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title)
     {
         var game = await _context.GameRepository.GetByTitleAsync(title);
@@ -70,18 +68,18 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         return Ok(dtos);
     }
 
-    //[HttpGet("{id}")]
-    //public async Task<ActionResult<GameDto>> GetGame(int id)
-    //{
-    //    //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
-    //    var game = await _context.GameRepository.GetAsync(id);
-    //    if (game == null)
-    //    {
-    //        return NotFound();
-    //    }
-    //    var dto = _mapper.Map<GameDto>(game);
-    //    return Ok(dto);
-    //}
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GameDto>> GetGame(int id)
+    {
+        //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
+        var game = await _context.GameRepository.GetAsync(id);
+        if (game == null)
+        {
+            return NotFound();
+        }
+        var dto = _mapper.Map<GameDto>(game);
+        return Ok(dto);
+    }
 
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -126,8 +124,10 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
                 return StatusCode(500);
             }
         }
-        //var createdGame = _mapper.Map<GameDto>(gameExist);
+        
         return NoContent();
+
+        //var createdGame = _mapper.Map<GameDto>(gameExist);
         //return CreatedAtAction(nameof(GetGame), new { id = gameExist.Id, TournamentDetailsId = gameExist.TournamentDetailsId }, createdGame);
 
     }
@@ -138,11 +138,6 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     //[Route("/api/TournamentDetails/{TournamentDetailsId}/Games")]
     public async Task<ActionResult<Game>> PostGame( GameCreateDto dto)
     {
-        //Console.WriteLine("\n\n\nTournamentDetailsId: " + TournamentDetailsId+"\n\n\n");
-        //Console.WriteLine("\n\n\nTournamentDetailsId: " + dto.TournamentDetailsId + "\n\n\n");
-        
-        //dto.TournamentDetailsId = TournamentDetailsId;
-
         TryValidateModel(dto);
         if (!ModelState.IsValid)
         {
