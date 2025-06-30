@@ -23,10 +23,19 @@ public class GameRepository(TournamentContext context) : IGameRepository
         return await context.Game.AnyAsync(o => o.Id == id);
     }
 
-    public async Task<IEnumerable<Game>> GetAllAsync(bool sort=false)
+    public async Task<(IEnumerable<Game>, PaginationMetadata)> GetAllAsync(bool sort=false, int pageNr = 1, int pageSize = 20)
     {
-        return sort ? await context.Game.OrderBy(o => o.Title).ToListAsync() 
-                    : await context.Game.ToListAsync();
+        var total = await context.Game.CountAsync();
+        var xxx = new PaginationMetadata(total, pageSize, pageNr);
+
+        return ( sort ? await context.Game.OrderBy(o => o.Title)
+                    .Skip(pageSize * (pageNr-1) )
+                    .Take(pageSize)
+                    .ToListAsync() 
+                    : await context.Game
+                    .Skip(pageSize * (pageNr - 1))
+                    .Take(pageSize)
+                    .ToListAsync(), xxx );
     }
 
     public async Task<Game> GetAsync(int id)

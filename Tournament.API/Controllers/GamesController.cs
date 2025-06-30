@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -24,6 +25,7 @@ namespace Tournament.Api.Controllers;
 [ApiController]
 public class GamesController(ITournamentUoW _context, IMapper _mapper) : ControllerBase
 {
+    int maxGamesperPage = 20;
     //private readonly TournamentContext _context;
     //private readonly ITournamentUoW _context;
     //private readonly IMapper _mapper;
@@ -41,14 +43,19 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort)
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort, int pageNr=1, int pageSize=20)
     {
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
-        var allGames = await _context.GameRepository.GetAllAsync(sort);
+        if (pageSize > maxGamesperPage)
+            pageSize = maxGamesperPage;
+
+        var (allGames, pagination) = await _context.GameRepository.GetAllAsync(sort,pageNr,pageSize);
         if (
         //  allGames == null || 
             allGames.IsNullOrEmpty()) return NotFound();
+
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
 
         //var dtos = allGames.AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
         var dtos = _mapper.Map<IEnumerable<GameDto>>(allGames);
