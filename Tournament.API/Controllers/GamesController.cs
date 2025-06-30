@@ -46,7 +46,9 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
         var allGames = await _context.GameRepository.GetAllAsync(sort);
-        if (allGames == null || allGames.IsNullOrEmpty()) return NotFound();
+        if (
+        //  allGames == null || 
+            allGames.IsNullOrEmpty()) return NotFound();
 
         //var dtos = allGames.AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
         var dtos = _mapper.Map<IEnumerable<GameDto>>(allGames);
