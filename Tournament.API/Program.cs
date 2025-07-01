@@ -1,9 +1,12 @@
+using Companies.API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Service.Contracts;
 using Tournament.Api.Extensions;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
+using Tournaments.Services;
 
 namespace Tournament.API
 {
@@ -31,9 +34,20 @@ namespace Tournament.API
 
             builder.Services.AddAutoMapper(typeof(TournamentMappings));
 
-            builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
-            builder.Services.AddScoped<IGameRepository, GameRepository>();
-            builder.Services.AddScoped<ITournamentUoW, TournamentUoW>();
+            builder.Services.ConfigureServiceLayerServices();
+            builder.Services.ConfigureRepositories();
+
+            //builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            //builder.Services.AddScoped<IGameService, GameService>();
+            //builder.Services.AddScoped<ITournamentDetailsService, TournamentDetailsService>();
+
+            // services.AddScoped(provider => new Lazy<ICompanyService>(() => provider.GetRequiredService<ICompanyService>()));
+            //builder.Services.AddLazy<ITournamentDetailsService>();
+            //builder.Services.AddLazy<IGameService>();
+
+            //builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
+            //builder.Services.AddScoped<IGameRepository, GameRepository>();
+            //builder.Services.AddScoped<ITournamentUoW, TournamentUoW>();
 
             var app = builder.Build();
 

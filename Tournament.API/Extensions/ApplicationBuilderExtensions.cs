@@ -10,6 +10,11 @@ namespace Tournament.Api.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
+    public static void xxx()
+    {
+
+    }
+
     public static async Task SeedDataAsync(this IApplicationBuilder builder)
     {
         using (var scope = builder.ApplicationServices.CreateScope())
