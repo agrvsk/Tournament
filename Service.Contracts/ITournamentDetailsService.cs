@@ -1,15 +1,14 @@
-﻿using Tournament.Core.DTOs;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Tournament.Core.DTOs;
 
 namespace Service.Contracts;
 
 public interface ITournamentDetailsService
 {
-    Task<IEnumerable<TournamentDto>>  GetAllAsync(bool showGames=false, bool sorted=false);
-    Task<TournamentDto> GetAsync(int id, bool showGames=false);
-
-
-
-    Task<(TournamentDto, ResultObject)> CreateAsync(TournamentCreateDto create);
-    Task UpdateAsync(TournamentUpdateDto update);
-    Task DeleteAsync(int id);
+    Task<ResultObjectDto<IEnumerable<TournamentDto>>>  GetAllAsync(bool showGames=false, bool sorted=false);
+    Task<ResultObjectDto<TournamentDto>> GetAsync(int id, bool showGames=false);
+    Task<ResultObjectDto<TournamentDto>> CreateAsync(TournamentCreateDto create);
+    Task<ResultObjectDto<TournamentDto>> UpdateAsync(TournamentUpdateDto update);
+    Task<ResultObjectDto<TournamentDto>> UpdateAsync(int Id, JsonPatchDocument<TournamentUpdateDto> patchDocument);
+    Task<ResultObjectDto<int>> DeleteAsync(int id);
 }
