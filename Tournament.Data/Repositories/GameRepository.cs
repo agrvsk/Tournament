@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
@@ -23,10 +24,10 @@ public class GameRepository(TournamentContext context) : IGameRepository
         return await context.Game.AnyAsync(o => o.Id == id);
     }
 
-    public async Task<(IEnumerable<Game>, PaginationMetadata)> GetAllAsync(bool sort=false, int pageNr = 1, int pageSize = 20)
+    public async Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(bool sort=false, int pageNr = 1, int pageSize = 20)
     {
         var total = await context.Game.CountAsync();
-        var xxx = new PaginationMetadata(total, pageSize, pageNr);
+        var xxx = new PaginationMetadataDto(total, pageSize, pageNr);
 
         return ( sort ? await context.Game.OrderBy(o => o.Title)
                     .Skip(pageSize * (pageNr-1) )

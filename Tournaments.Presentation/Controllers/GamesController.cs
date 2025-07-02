@@ -1,22 +1,14 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Bogus.DataSets;
-using Humanizer;
-using Microsoft.AspNetCore.Http;
+//using Bogus.DataSets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Data.Data;
 
 namespace Tournament.Api.Controllers;
 
@@ -45,15 +37,17 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort, int pageNr=1, int pageSize=20)
     {
+
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
         if (pageSize > maxGamesperPage)
             pageSize = maxGamesperPage;
 
         var (allGames, pagination) = await _context.GameRepository.GetAllAsync(sort,pageNr,pageSize);
-        if (
+        //if (
         //  allGames == null || 
-            allGames.IsNullOrEmpty()) return NotFound();
+        //    allGames.IsNullOrEmpty()) return NotFound();
+        if( allGames == null ) return NotFound();
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
 

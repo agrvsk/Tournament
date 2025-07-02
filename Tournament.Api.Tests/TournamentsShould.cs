@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,12 +10,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Service.Contracts;
 using Tournament.Api.Controllers;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
+using Tournaments.Services;
 using static Tournament.Api.Controllers.TournamentDetailsController;
 
 namespace Tournament.Api.Tests;
@@ -103,9 +106,12 @@ public class TournamentsShould
                 It.IsAny<string>(),
                 It.IsAny<object>()));
 
-            
 
-            TournamentDetailsController controller = new TournamentDetailsController(UoW.Object, map.Object);
+            var lTour = new Lazy<ITournamentDetailsService>(() => new TournamentDetailsService(UoW.Object, map.Object));
+            var lGame = new Lazy<IGameService>(() => new GameService(UoW.Object, map.Object));
+            ServiceManager m = new ServiceManager(lTour, lGame);
+
+            TournamentDetailsController controller = new TournamentDetailsController(m);
             controller.ObjectValidator = mockValidator.Object;
             return controller;
 

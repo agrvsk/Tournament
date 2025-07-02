@@ -8,9 +8,9 @@ namespace Tournaments.Services;
 
 public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
 {
-    public async Task<(IEnumerable<GameDto>,PaginationMetadata)> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 10)
+    public async Task<(IEnumerable<GameDto>,PaginationMetadataDto)> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 10)
     {
-        (IEnumerable objects, PaginationMetadata pg) = await _uow.GameRepository.GetAllAsync(sorted, pageNr, pageSize);
+        (IEnumerable objects, PaginationMetadataDto pg) = await _uow.GameRepository.GetAllAsync(sorted, pageNr, pageSize);
         IEnumerable<GameDto> dtos = _mapper.Map<IEnumerable<GameDto>>(objects);
         return (dtos, pg);
     }

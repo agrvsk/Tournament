@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tournament.Core.Repositories;
+namespace Tournament.Core.DTOs;
 
-public class PaginationMetadata(int TotalItemCount, int PageSize, int CurrentPage)
+public record PaginationMetadataDto(int TotalItemCount, int PageSize, int CurrentPage)
 {
     int TotalPageCount = (int)Math.Ceiling(TotalItemCount / (double)PageSize );
 }

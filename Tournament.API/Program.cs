@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using Companies.API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,8 @@ namespace Tournament.API
 
             // Add services to the container.
             builder.Services.AddControllers(opt => opt.ReturnHttpNotAcceptable = true)
-                .AddNewtonsoftJson();
+                .AddNewtonsoftJson()
+                .AddApplicationPart(typeof(AssemblyReference).Assembly);
             //    .AddXmlDataContractSerializerFormatters();
 
             //builder.Services.AddControllers();
@@ -49,6 +51,7 @@ namespace Tournament.API
             //builder.Services.AddScoped<IGameRepository, GameRepository>();
             //builder.Services.AddScoped<ITournamentUoW, TournamentUoW>();
 
+            builder.Services.ConfigureCors();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -60,6 +63,8 @@ namespace Tournament.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
 

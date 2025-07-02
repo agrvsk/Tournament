@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+
 using System.ComponentModel.Design;
 using System.Data;
 using System.Linq;
@@ -7,32 +7,34 @@ using System.Threading.Tasks;
 using System.Xml.XPath;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Bogus.DataSets;
+//using Bogus.DataSets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+//using Microsoft.IdentityModel.Tokens;
+using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Data.Data;
+//using Tournament.Data.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tournament.Api.Controllers;
 
 [Route("api/TournamentDetails")]
 [ApiController]
-public class TournamentDetailsController : ControllerBase
+public class TournamentDetailsController(IServiceManager _serviceManager) : ControllerBase
 {
     //private readonly TournamentContext _context;
     private readonly ITournamentUoW _context;
     private readonly IMapper _mapper;
-    public TournamentDetailsController(ITournamentUoW context, IMapper mapper)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
+
+    //public TournamentDetailsController(ITournamentUoW context, IMapper mapper, IServiceManager serviceManager) 
+    //{
+    //    _context = context;
+    //    _mapper = mapper;
+    //}
 
     //public TournamentDetailsController(TournamentContext context, IMapper mapper)
     //{
@@ -53,12 +55,16 @@ public class TournamentDetailsController : ControllerBase
         //return await _context.TournamentDetails.ToListAsync();
         //var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
         //var torments = showGames ? await _context.TournamentRepository.GetAllAsync(showGames, sort)
-        var torments = await _context.TournamentRepository.GetAllAsync(fi.ShowGames, fi.Sort);
-        if (torments == null || torments.IsNullOrEmpty()) return NotFound();
+        //var torments = await _context.TournamentRepository.GetAllAsync(fi.ShowGames, fi.Sort);
+        //if (torments == null || torments.IsNullOrEmpty()) return NotFound();
 
         //var dto = torments.AsQueryable().ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToList();
-        var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
-        return Ok(dto);
+        //var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
+
+        IEnumerable<TournamentDto> dtos = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort);
+        //if(dtos.IsNullOrEmpty()) return NotFound();
+        if(dtos == null) return NotFound();
+        return Ok(dtos);
     }
 
 
@@ -69,15 +75,15 @@ public class TournamentDetailsController : ControllerBase
     public async Task<ActionResult<TournamentDto>> GetTournamentDetails(int id, bool showGames)
     {
         //    var tournamentDetails = await _context.TournamentDetails.FindAsync(id);
-        var tournamentDetails = showGames ? await _context.TournamentRepository.GetAsync(id, true)
-                                          : await _context.TournamentRepository.GetAsync(id);
+        //var tournamentDetails = showGames ? await _context.TournamentRepository.GetAsync(id, true)
+        //                                  : await _context.TournamentRepository.GetAsync(id);
+        //var dto = _mapper.Map<TournamentDto>(tournamentDetails);
 
-        if (tournamentDetails == null)
-        {
+        var dto = _serviceManager.TournamentService.GetAsync(id, showGames);
+        if (dto == null) 
             return NotFound();
-        }
-        var dto = _mapper.Map<TournamentDto>(tournamentDetails);
-        return Ok(dto);
+        else
+            return Ok(dto);
     }
 
     // PUT: api/TournamentDetails/5
@@ -101,8 +107,10 @@ public class TournamentDetailsController : ControllerBase
         //var tournamentExist = await _context.TournamentDetails.SingleOrDefaultAsync(t=>t.Id == id);
         var tournamentExist = await _context.TournamentRepository.GetAsync(id);
         if (tournamentExist == null) return NotFound();
-
         _mapper.Map(dto, tournamentExist);
+
+        ////var dto = await _serviceManager.TournamentService.GetAsync(id);
+        ////if (dto == null) return NotFound();
 
         //När Behövs följande????
         //      _context.Entry(tournamentExist).State = EntityState.Modified;
@@ -140,7 +148,7 @@ public class TournamentDetailsController : ControllerBase
     // POST: api/TournamentDetails
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentCreateDto dto)
+    public async Task<ActionResult<(TournamentDto, ResultObject)>> PostTournamentDetails(TournamentCreateDto dto)
     {
         TryValidateModel(dto);
         if (!ModelState.IsValid)
@@ -148,29 +156,35 @@ public class TournamentDetailsController : ControllerBase
             return BadRequest();
         }
 
-        var torment = _mapper.Map<TournamentDetails>(dto);
+        (var returDto, var status) = await _serviceManager.TournamentService.CreateAsync(dto);
+        if (status.IsSuccess )
+        {
+
+        }
+        //var torment = _mapper.Map<TournamentDetails>(dto);
 
         //_context.TournamentDetails.Add(torment);
-        _context.TournamentRepository.Add(torment);
+        //_context.TournamentRepository.Add(torment);
+        //_serviceManager.TournamentService.Add(dto);
 
-        try
-        {
-            //await _context.SaveChangesAsync();
-            await _context.CompleteAsync();
-        }
-        catch (DBConcurrencyException)
-        {
-            //throw;
-            return StatusCode(500);
-        }
+        //try
+        //{
+        //    //await _context.SaveChangesAsync();
+        //    await _context.CompleteAsync();
+        //}
+        //catch (DBConcurrencyException)
+        //{
+        //    //throw;
+        //    return StatusCode(500);
+        //}
 
-        var createdTorment = _mapper.Map<TournamentDto>(torment);
+        //var createdTorment = _mapper.Map<TournamentDto>(torment);
 
         //_context.TournamentDetails.Add(tournamentDetails);
         //await _context.SaveChangesAsync();
 
         //      return CreatedAtAction("GetTournamentDetails", new { id = tournamentDetails.Id }, tournamentDetails);
-        return CreatedAtAction(nameof(GetTournamentDetails), new { id = torment.Id }, createdTorment);
+        return CreatedAtAction(nameof(GetTournamentDetails), new { id = returDto.Id }, returDto );
 
     }
 
@@ -212,7 +226,7 @@ public class TournamentDetailsController : ControllerBase
         if (tournamentToPatch == null) return NotFound("Tournament does not exist");
 
         var dto = _mapper.Map<TournamentUpdateDto>(tournamentToPatch);
-        patchDocument.ApplyTo(dto, ModelState); // Här patchas dto:n ihop med patchdokumentet.
+//        patchDocument.ApplyTo(dto, ModelState); // Här patchas dto:n ihop med patchdokumentet.    //TODO!!!!!!!!!!!!!
         TryValidateModel(dto);
 
         if (!ModelState.IsValid)

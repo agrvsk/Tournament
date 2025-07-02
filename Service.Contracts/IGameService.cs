@@ -7,7 +7,7 @@ namespace Service.Contracts;
 
 public interface IGameService
 {
-    Task<(IEnumerable<GameDto>, PaginationMetadata)> GetAllAsync(bool sorted=false, int pageNr=1, int pageSize=10);
+    Task<(IEnumerable<GameDto>, PaginationMetadataDto)> GetAllAsync(bool sorted=false, int pageNr=1, int pageSize=10);
     Task<IEnumerable<GameDto>> GetByTitleAsync(string title);
     Task<GameDto> GetAsync(int id);
 }
