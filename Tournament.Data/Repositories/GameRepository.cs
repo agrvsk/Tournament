@@ -43,9 +43,20 @@ public class GameRepository(TournamentContext context) : IGameRepository
     {
         return await context.Game.SingleOrDefaultAsync(o => o.Id == id);
     }
-    public async Task<IEnumerable<Game>> GetByTitleAsync(string title)
+    public async Task<(IEnumerable<Game>,PaginationMetadataDto)> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20)
     {
-        return await context.Game.Where(o => o.Title == title).ToListAsync();
+        var filter = context.Game.Where(o => o.Title == title);
+
+        var total = await filter.CountAsync();
+        var pg = new PaginationMetadataDto(total, pageSize, pageNr);
+
+        var data = await filter
+            .Skip(pageSize * (pageNr - 1))
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (data, pg);
+        //return await context.Game.Where(o => o.Title == title).ToListAsync();
     }
 
 

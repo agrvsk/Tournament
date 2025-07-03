@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
@@ -23,10 +24,26 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         return await context.TournamentDetails.AnyAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<TournamentDetails>> GetAllAsync(bool showGames = false, bool sort = false)
+    public async Task<(IEnumerable<TournamentDetails>,PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20)
     {
-        return showGames ? SortFunc( await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync(),sort)
-                         : SortFunc( await context.TournamentDetails.ToArrayAsync(), sort);
+        IQueryable<TournamentDetails> data = context.TournamentDetails;
+        var total = await data.CountAsync();
+        var pg = new PaginationMetadataDto(total, pageSize, pageNr);
+
+        if (sort)
+            data = data.OrderBy(x => x.Title);
+
+        data = data
+            .Skip(pageSize * (pageNr - 1))
+            .Take(pageSize);
+
+        if (showGames)
+            data = data.Include(x => x.Games);
+
+        return (await data.ToListAsync(), pg);
+
+        //return showGames ? SortFunc( await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync(),sort)
+        //                 : SortFunc( await context.TournamentDetails.ToArrayAsync(), sort);
     }
 
     public IEnumerable<TournamentDetails> SortFunc(IEnumerable<TournamentDetails>  items, bool Sort)

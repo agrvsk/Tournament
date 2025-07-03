@@ -28,6 +28,7 @@ namespace Tournament.Api.Controllers;
 [ApiController]
 public class TournamentDetailsController(IServiceManager _serviceManager) : ControllerBase
 {
+    readonly int maxToursPerPage = 100;
     //private readonly TournamentContext _context;
     //private readonly ITournamentUoW _context;
     //private readonly IMapper _mapper;
@@ -48,12 +49,17 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
     {
         public bool ShowGames { get; set; }
         public bool Sort { get; set; }
+
+        public int PageNr { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
     }
     // GET: api/TournamentDetails
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery] FilterObject fi)
   //public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames, bool sort)
     {
+        if (fi.PageSize > maxToursPerPage)
+            fi.PageSize = maxToursPerPage;
         //return await _context.TournamentDetails.ToListAsync();
         //var torments = await _context.TournamentDetails.ProjectTo<TournamentDto>(_mapper.ConfigurationProvider).ToListAsync();
         //var torments = showGames ? await _context.TournamentRepository.GetAllAsync(showGames, sort)
@@ -64,7 +70,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         //var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
 
         //IEnumerable<TournamentDto> dtos
-        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort);
+        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort, fi.PageNr, fi.PageSize);
         //if(dtos.IsNullOrEmpty()) return NotFound();
         if(retur.Data == null) return NotFound();
         return Ok(retur.Data);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Tournaments.Services;
 
 public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : ITournamentDetailsService
 {
-    public async Task<ResultObjectDto<IEnumerable<TournamentDto>>> GetAllAsync(bool showGames = false, bool sorted = false)
+    public async Task<ResultObjectDto<IEnumerable<TournamentDto>>> GetAllAsync(bool showGames = false, bool sorted = false, int pageNr=1, int pageSize=20 )
     {
         ResultObjectDto<IEnumerable<TournamentDto>> retur = new ResultObjectDto<IEnumerable<TournamentDto>>();
         retur.Message = string.Empty;
@@ -30,7 +31,7 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
         retur.Pagination = null;
         retur.StatusCode = 500;
 
-        IEnumerable objects = await _uow.TournamentRepository.GetAllAsync(showGames, sorted);
+        (IEnumerable objects, var pg) = await _uow.TournamentRepository.GetAllAsync(showGames, sorted, pageNr, pageSize);
         if (objects == null)
         {
             retur.IsSuccess = false;
@@ -38,6 +39,7 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
             return retur;
         }
         retur.Data = _mapper.Map<IEnumerable<TournamentDto>>(objects);
+        retur.Pagination = pg;
         retur.IsSuccess = true;
         return retur;
     }
@@ -71,6 +73,18 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
         retur.Data = null;
         retur.Pagination = null;
         retur.StatusCode = 500;
+
+        var context = new ValidationContext(dto, null, null);
+        var fel = new List<ValidationResult>();
+
+        var ok =  Validator.TryValidateObject(dto, context, fel, validateAllProperties: true);
+        if (!ok)
+        {
+            foreach (ValidationResult result in fel)
+            {
+                retur.Message = result.ErrorMessage;
+            }
+        }
 
         var torment = _mapper.Map<TournamentDetails>(dto);
         _uow.TournamentRepository.Add(torment);

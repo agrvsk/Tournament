@@ -19,7 +19,7 @@ namespace Tournament.Api.Controllers;
 [ApiController]
 public class GamesController(IServiceManager _serviceManager) : ControllerBase
 {
-    int maxGamesperPage = 20;
+    readonly int maxGamesPerPage = 100;
     //private readonly TournamentContext _context;
     //private readonly ITournamentUoW _context;
     //private readonly IMapper _mapper;
@@ -42,8 +42,8 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
 
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
-        if (pageSize > maxGamesperPage)
-            pageSize = maxGamesperPage;
+        if (pageSize > maxGamesPerPage)
+            pageSize = maxGamesPerPage;
         var result = await _serviceManager.GameService.GetAllAsync(sort, pageNr, pageSize);
  
         if (result.IsSuccess)
@@ -73,9 +73,12 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
 
     // GET: api/Games/T
     [HttpGet("T")]
-    public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title)
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title, int pageNr = 1, int pageSize = 20)
     {
-        var result = await _serviceManager.GameService.GetByTitleAsync(title);
+        if (pageSize > maxGamesPerPage)
+            pageSize = maxGamesPerPage;
+
+        var result = await _serviceManager.GameService.GetByTitleAsync(title, pageNr, pageSize);
         if (result.IsSuccess)
         {
             return Ok(result.Data);

@@ -8,7 +8,7 @@ namespace Tournaments.Services;
 
 public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
 {
-    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 10)
+    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 20)
     {
         ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
         retur.Message = string.Empty;
@@ -55,7 +55,7 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         return (retur);
     }
 
-    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetByTitleAsync(string title)
+    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20)
     {
         ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
         retur.Message = string.Empty;
@@ -64,7 +64,7 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         retur.Pagination = null;
         retur.StatusCode = 500;
 
-        IEnumerable games = await _uow.GameRepository.GetByTitleAsync(title);
+        (IEnumerable games, var pg) = await _uow.GameRepository.GetByTitleAsync(title, pageNr ,  pageSize );
         if (games == null)
         {
             retur.Message = $"No game with title {title} was not found.";
@@ -72,6 +72,7 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         }
         retur.IsSuccess = true;
         retur.Data = _mapper.Map<IEnumerable<GameDto>>(games);
+        retur.Pagination = pg;
         retur.StatusCode = 200;
         return retur;
     }

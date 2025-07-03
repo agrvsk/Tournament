@@ -12,7 +12,7 @@ public interface IGameRepository
 {
     Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(bool sort=false, int pageNr=1, int pageSize=20);
     Task<Game> GetAsync(int id);
-    Task<IEnumerable<Game>> GetByTitleAsync(string title);
+    Task<(IEnumerable<Game>, PaginationMetadataDto)> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20);
     Task<bool> AnyAsync(int id);
     void Add(Game game);
     void Update(Game game);
