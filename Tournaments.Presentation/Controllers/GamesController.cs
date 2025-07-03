@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using AutoMapper;
 //using Bogus.DataSets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
@@ -15,7 +17,7 @@ namespace Tournament.Api.Controllers;
 //[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
 [Route("api/Games")]
 [ApiController]
-public class GamesController(ITournamentUoW _context, IMapper _mapper) : ControllerBase
+public class GamesController(IServiceManager _serviceManager) : ControllerBase
 {
     int maxGamesperPage = 20;
     //private readonly TournamentContext _context;
@@ -42,18 +44,30 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         //return Ok(await _context.GameRepository.GetAllAsync());
         if (pageSize > maxGamesperPage)
             pageSize = maxGamesperPage;
+        var result = await _serviceManager.GameService.GetAllAsync(sort, pageNr, pageSize);
+ 
+        if (result.IsSuccess)
+        {
+            if (result.Pagination != null)
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
 
-        var (allGames, pagination) = await _context.GameRepository.GetAllAsync(sort,pageNr,pageSize);
-        //if (
-        //  allGames == null || 
-        //    allGames.IsNullOrEmpty()) return NotFound();
-        if( allGames == null ) return NotFound();
+            return Ok(result.Data);
+        }
+        else
+        {
+            return StatusCode(result.StatusCode);
+        }
+            //var (allGames, pagination) = await _context.GameRepository.GetAllAsync(sort,pageNr,pageSize);
+            //if (
+            //  allGames == null || 
+            //    allGames.IsNullOrEmpty()) return NotFound();
+            //if( allGames == null ) return NotFound();
 
-        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
+            //Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
 
         //var dtos = allGames.AsQueryable().ProjectTo<GameDto>(_mapper.ConfigurationProvider).ToList();
-        var dtos = _mapper.Map<IEnumerable<GameDto>>(allGames);
-        return Ok(dtos);
+        //var dtos = _mapper.Map<IEnumerable<GameDto>>(allGames);
+        //return Ok(dtos);
     }
 
 
@@ -61,27 +75,45 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
     [HttpGet("T")]
     public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title)
     {
-        var game = await _context.GameRepository.GetByTitleAsync(title);
-
-        if (game == null)
+        var result = await _serviceManager.GameService.GetByTitleAsync(title);
+        if (result.IsSuccess)
         {
-            return NotFound();
+            return Ok(result.Data);
         }
-        var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
-        return Ok(dtos);
+        else
+        {
+            return StatusCode(result.StatusCode);
+        }
+        //var game = await _context.GameRepository.GetByTitleAsync(title);
+
+        //if (game == null)
+        //{
+        //    return NotFound();
+        //}
+        //var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
+        //return Ok(dtos);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GameDto>> GetGame(int id)
     {
         //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
-        var game = await _context.GameRepository.GetAsync(id);
-        if (game == null)
+        var result=await _serviceManager.GameService.GetAsync(id);
+        if (result.IsSuccess)
         {
-            return NotFound();
+            return Ok(result.Data);
         }
-        var dto = _mapper.Map<GameDto>(game);
-        return Ok(dto);
+        else
+        {
+            return StatusCode(result.StatusCode);
+        }
+        //var game = await _context.GameRepository.GetAsync(id);
+        //if (game == null)
+        //{
+        //    return NotFound();
+        //}
+        //var dto = _mapper.Map<GameDto>(game);
+        //return Ok(dto);
     }
 
     // PUT: api/Games/5
@@ -99,36 +131,45 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
         {
             return BadRequest();
         }
+        var retur = await _serviceManager.GameService.UpdateAsync(dto);
+        if (retur.IsSuccess)
+        {
+            return NoContent();
+        }
+        else
+        {
+            return StatusCode(retur.StatusCode);
+        }
 
-        var gameExist = await _context.GameRepository.GetAsync(id);
-        if(gameExist == null) return NotFound();
+//        var gameExist = await _context.GameRepository.GetAsync(id);
+//        if(gameExist == null) return NotFound();
 
-        _mapper.Map(dto, gameExist);
+//        _mapper.Map(dto, gameExist);
 
-        //När Behövs följande????
-        //_context.Entry(game).State = EntityState.Modified;
-        _context.GameRepository.SetStateModified(gameExist);
+//        //När Behövs följande????
+//        //_context.Entry(game).State = EntityState.Modified;
+//        _context.GameRepository.SetStateModified(gameExist);
         
 
-        try
-        {
-//          await _context.SaveChangesAsync();
-            await _context.CompleteAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await GameExistsAsync(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                //throw;
-                return StatusCode(500);
-            }
-        }
+//        try
+//        {
+////          await _context.SaveChangesAsync();
+//            await _context.CompleteAsync();
+//        }
+//        catch (DbUpdateConcurrencyException)
+//        {
+//            if (!await GameExistsAsync(id))
+//            {
+//                return NotFound();
+//            }
+//            else
+//            {
+//                //throw;
+//                return StatusCode(500);
+//            }
+//        }
         
-        return NoContent();
+//        return NoContent();
 
         //var createdGame = _mapper.Map<GameDto>(gameExist);
         //return CreatedAtAction(nameof(GetGame), new { id = gameExist.Id, TournamentDetailsId = gameExist.TournamentDetailsId }, createdGame);
@@ -153,58 +194,76 @@ public class GamesController(ITournamentUoW _context, IMapper _mapper) : Control
 
         //_context.Game.Add(game);
         //await _context.SaveChangesAsync();
-        var game = _mapper.Map<Game>(dto);
+        //var game = _mapper.Map<Game>(dto);
 
-        _context.GameRepository.Add(game);
+        //_context.GameRepository.Add(game);
 
-        try
+        //try
+        //{
+        //    //await _context.SaveChangesAsync();
+        //    await _context.CompleteAsync();
+        //}
+        //catch (DBConcurrencyException)
+        //{
+        //    //throw;
+        //    return StatusCode(500);
+        //}
+        //var createdGame = _mapper.Map<GameDto>(game);
+
+
+        var retur = await _serviceManager.GameService.CreateAsync(dto);
+        if (retur.IsSuccess)
         {
-            //await _context.SaveChangesAsync();
-            await _context.CompleteAsync();
+            return CreatedAtAction(nameof(GetGame), new { id = retur.Id }, retur.Data);
         }
-        catch (DBConcurrencyException)
+        else
         {
-            //throw;
-            return StatusCode(500);
+            return StatusCode(retur.StatusCode);
         }
-        var createdGame = _mapper.Map<GameDto>(game);
-
         //return CreatedAtAction(nameof(GetGame), new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
-        return CreatedAtAction(nameof(GetGame), new { id = game.Id }, game);
+        //return CreatedAtAction(nameof(GetGame), new { id = game.Id }, game);
     }
 
     // DELETE: api/Games/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-//        var game = await _context.Game.FindAsync(id);
-        var game = await _context.GameRepository.GetAsync(id);
-
-        if (game == null)
+        var result = await _serviceManager.GameService.DeleteAsync(id);
+        if (result.IsSuccess)
         {
-            return NotFound();
+            return NoContent();
         }
+        else
+            return StatusCode(result.StatusCode);
 
-        //_context.Game.Remove(game);
-        _context.GameRepository.Remove(game);
+        //    //        var game = await _context.Game.FindAsync(id);
+        //    var game = await _context.GameRepository.GetAsync(id);
 
-        try
-        {
-            //await _context.SaveChangesAsync();
-            await _context.CompleteAsync();
-        }
-        catch (DBConcurrencyException)
-        {
-            //throw;
-            return StatusCode(500);
-        }
+        //if (game == null)
+        //{
+        //    return NotFound();
+        //}
 
-        return NoContent();
+        ////_context.Game.Remove(game);
+        //_context.GameRepository.Remove(game);
+
+        //try
+        //{
+        //    //await _context.SaveChangesAsync();
+        //    await _context.CompleteAsync();
+        //}
+        //catch (DBConcurrencyException)
+        //{
+        //    //throw;
+        //    return StatusCode(500);
+        //}
+
+        //return NoContent();
     }
 
-    private  async Task<bool> GameExistsAsync(int id)
-    {
-        //return  _context.Game.Any(o=>o.Id == id);
-        return await _context.GameRepository.AnyAsync(id);
-    }
+    //private  async Task<bool> GameExistsAsync(int id)
+    //{
+    //    //return  _context.Game.Any(o=>o.Id == id);
+    //    return await _context.GameRepository.AnyAsync(id);
+    //}
 }
