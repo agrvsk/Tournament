@@ -1,31 +1,35 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Services.Contracts;
+﻿using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Services.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
+using Tournament.Core.Repositories;
 
 namespace Tournaments.Services;
 
 public class AuthService : IAuthService
 {
     private readonly IMapper mapper;
+    private readonly ITournamentUoW _uow;
     private readonly UserManager<User> userManager;
     private readonly RoleManager<IdentityRole> roleManager;
     private readonly IConfiguration config;
     private User? user;
 
-    public AuthService(IMapper mapper, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
+    public AuthService(IMapper mapper, ITournamentUoW uow, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
     {
         this.mapper = mapper;
         this.userManager = userManager;
         this.roleManager = roleManager;
         this.config = config;
+        _uow = uow;
     }
 
 
@@ -193,6 +197,25 @@ public class AuthService : IAuthService
 
         return principal;
 
+    }
+
+    public async Task<ResultObjectDto<IEnumerable<UserForRegistrationDto>>> GetAllUsersAsync()
+    {
+        ResultObjectDto<IEnumerable<UserForRegistrationDto>> retur = new ResultObjectDto<IEnumerable<UserForRegistrationDto>>();
+        retur.Message = string.Empty;
+        retur.IsSuccess = true;
+        retur.Data = null;
+        retur.Pagination = null;
+        retur.StatusCode = 200;
+
+        var objects = await _uow.UserRepository.GetUsersAsync();  //AllAsync(sorted, pageNr, pageSize);
+
+        IEnumerable<UserForRegistrationDto> dtos = mapper.Map<IEnumerable<UserForRegistrationDto>>(userManager.Users.ToList<User>());
+        //await userManager.Users.ToListAsync();
+        retur.Data = dtos;
+
+
+        return retur;
     }
 }
 

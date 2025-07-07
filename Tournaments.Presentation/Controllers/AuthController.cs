@@ -16,6 +16,12 @@ namespace Companies.Presentation.Controllers
         {
             this.serviceManager = serviceManager;
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers() 
+        {
+            var result = await serviceManager.AuthService.GetAllUsersAsync();
+            return Ok(result.Data);
+        }
 
         [HttpPost]
         public async Task<ActionResult> RegisterUser(UserForRegistrationDto registrationDto)

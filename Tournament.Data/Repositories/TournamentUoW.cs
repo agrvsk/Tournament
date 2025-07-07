@@ -14,11 +14,13 @@ namespace Tournament.Data.Repositories;
 
 public class TournamentUoW (TournamentContext _context, 
     ITournamentRepository tournamentRepository,
-    IGameRepository gameRepository) 
+    IGameRepository gameRepository,
+    IUserRepository userRepository) 
     : ITournamentUoW
 {
     public ITournamentRepository TournamentRepository => tournamentRepository;
     public IGameRepository GameRepository => gameRepository;
+    public IUserRepository UserRepository => userRepository;
 
     //private readonly TournamentContext _context;
     //public ITournamentRepository TournamentRepository { get; }

@@ -13,6 +13,7 @@ public interface ITournamentUoW
 
     ITournamentRepository TournamentRepository { get; }
     IGameRepository GameRepository { get; }
+    IUserRepository UserRepository { get; }
     Task CompleteAsync();
     Task<ResultObjectDto<T>> CompleteAsync<T>(ResultObjectDto<T> input);
 }

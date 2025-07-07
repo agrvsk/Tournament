@@ -42,10 +42,12 @@ namespace Companies.API.Extensions
         public static void ConfigureRepositories(this IServiceCollection services)
         {
             services.AddScoped<ITournamentRepository, TournamentRepository>();
-
             services.AddScoped<IGameRepository, GameRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
             services.AddScoped<ITournamentUoW, TournamentUoW>();
 
+            services.AddLazy<IUserRepository>();
             services.AddLazy<IGameRepository>();
             services.AddLazy<ITournamentRepository>();
         }
