@@ -81,6 +81,9 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
         var result = await _serviceManager.GameService.GetByTitleAsync(title, pageNr, pageSize);
         if (result.IsSuccess)
         {
+            if (result.Pagination != null)
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
+
             return Ok(result.Data);
         }
         else

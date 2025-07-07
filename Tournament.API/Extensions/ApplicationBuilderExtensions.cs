@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Configuration;
 using Bogus;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Tournament.Core.Entities;
@@ -10,10 +12,13 @@ namespace Tournament.Api.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-    public static void xxx()
-    {
+    private static UserManager<User> userManager;
+    private static RoleManager<IdentityRole> roleManager;
+    private static IConfiguration configuration;
 
-    }
+    private const string gameRole = "Game";
+    private const string adminRole = "Admin";
+
 
     public static async Task SeedDataAsync(this IApplicationBuilder builder)
     {
@@ -30,6 +35,12 @@ public static class ApplicationBuilderExtensions
 
             try
             {
+                userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+                roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+                await CreateRolesAsync(new[] { adminRole, gameRole });
+
                 var torments = GenerateTournaments(4);
                 db.AddRange(torments);
                 await db.SaveChangesAsync();
@@ -42,6 +53,22 @@ public static class ApplicationBuilderExtensions
         }
     }
 
+    private static async Task CreateRolesAsync(string[] roleNames)
+    {
+        foreach (var roleName in roleNames)
+        {
+            if (await roleManager.RoleExistsAsync(roleName))
+            {
+                continue;
+            }
+            var role = new IdentityRole { Name = roleName };
+            var result = await roleManager.CreateAsync(role);
+            if (!result.Succeeded)
+            {
+                throw new Exception(string.Join("\n", result.Errors));
+            }
+        }
+    }
 
 
     private static List<TournamentDetails> GenerateTournaments(int nrOfTournaments)

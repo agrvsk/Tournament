@@ -1,9 +1,11 @@
 using System.Reflection.Metadata;
 using Companies.API.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Contracts;
 using Tournament.Api.Extensions;
+using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
@@ -51,6 +53,21 @@ namespace Tournament.API
             //builder.Services.AddScoped<IGameRepository, GameRepository>();
             //builder.Services.AddScoped<ITournamentUoW, TournamentUoW>();
 
+            builder.Services.ConfigureJwt(builder.Configuration);
+
+            builder.Services.AddIdentityCore<User>(opt =>
+            {
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequiredLength = 3;
+                opt.User.RequireUniqueEmail = true;
+            }
+            ).AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<TournamentContext>()
+            .AddDefaultTokenProviders();
+
             builder.Services.ConfigureCors();
             var app = builder.Build();
 
@@ -66,6 +83,7 @@ namespace Tournament.API
 
             app.UseCors("AllowAll");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

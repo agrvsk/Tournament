@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Tournament.Core.Entities;
 
 namespace Tournament.Data.Data;
 
-public class TournamentContext : DbContext
+public class TournamentContext : IdentityDbContext<User, IdentityRole,string >
 {
     public TournamentContext (DbContextOptions<TournamentContext> options)
         : base(options)

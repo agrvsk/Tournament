@@ -1,8 +1,10 @@
 ﻿using System;
-
+using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 using AutoMapper;
@@ -17,6 +19,7 @@ using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using static System.Net.WebRequestMethods;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 //using Tournament.Data.Data;
@@ -49,8 +52,9 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
     {
         public bool ShowGames { get; set; }
         public bool Sort { get; set; }
-
+        [DefaultValue(1)]
         public int PageNr { get; set; } = 1;
+        [DefaultValue(20)]
         public int PageSize { get; set; } = 20;
     }
     // GET: api/TournamentDetails
@@ -71,12 +75,35 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 
         //IEnumerable<TournamentDto> dtos
         var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort, fi.PageNr, fi.PageSize);
+        if (retur.IsSuccess)
+        {
+            if (retur.Pagination != null)
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(retur.Pagination));
+            return Ok(retur.Data);
+        }
+        else
+        {
+            if (retur.Data == null)
+            {
+                return NotFound(Wrap(retur));
+            }
+            return StatusCode(retur.StatusCode, Wrap(retur));
+        }
+
         //if(dtos.IsNullOrEmpty()) return NotFound();
-        if(retur.Data == null) return NotFound();
-        return Ok(retur.Data);
     }
 
-
+    public ProblemDetails Wrap<T>(ResultObjectDto<T> retur)
+    {
+        return new ProblemDetails
+        {
+            Type = "application/json",
+            Title = "Fel inträffade vid bearbetning.",
+            Detail = retur.Message,
+            Status = retur.StatusCode,
+            Instance = HttpContext.Request.Path
+        };
+    }
 
 
     // GET: api/TournamentDetails/5
@@ -91,7 +118,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         //var dto = 
         var retur = await _serviceManager.TournamentService.GetAsync(id, showGames);
         if (!retur.IsSuccess) 
-            return NotFound();
+            return NotFound(Wrap(retur));
 
             return Ok(retur.Data);
     }
@@ -120,7 +147,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         }
         else
         {
-            return StatusCode(status.StatusCode);
+            return StatusCode(status.StatusCode, Wrap(status));
         }
 
         //var tournamentExist = await _context.TournamentDetails.SingleOrDefaultAsync(t=>t.Id == id);
@@ -178,7 +205,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         var status = await _serviceManager.TournamentService.CreateAsync(dto);
         if (!status.IsSuccess )
         {
-            return StatusCode(status.StatusCode);
+            return StatusCode(status.StatusCode, Wrap(status));
         }
         else
         {
@@ -279,9 +306,17 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 //        var returDto = _mapper.Map<TournamentDto>(tournamentToPatch);
 
         var retur = await _serviceManager.TournamentService.UpdateAsync(tournamentId, patchDocument);
+        if (retur.IsSuccess)
+        {
+            return CreatedAtAction(nameof(GetTournamentDetails), new { id = retur.Id }, retur.Data);
 
-        //return NoContent();
-        return CreatedAtAction (nameof(GetTournamentDetails), new { id = retur.Id }, retur.Data );
+        }
+        else
+        {
+            return StatusCode(retur.StatusCode,Wrap(retur));
+        }
+            //return NoContent();
+            //return CreatedAtAction(nameof(GetTournamentDetails), new { id = retur.Id }, retur.Data);
         //return AcceptedAtAction(nameof(GetTournamentDetails), new { id = tournamentToPatch.Id }, returDto);
         //ChangedAtAction / UpdatedAt ???
 

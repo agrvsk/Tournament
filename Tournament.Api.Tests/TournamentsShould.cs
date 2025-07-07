@@ -6,11 +6,14 @@ using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Humanizer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Service.Contracts;
+using Services.Contracts;
 using Tournament.Api.Controllers;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
@@ -109,7 +112,13 @@ public class TournamentsShould
 
             var lTour = new Lazy<ITournamentDetailsService>(() => new TournamentDetailsService(UoW.Object, map.Object));
             var lGame = new Lazy<IGameService>(() => new GameService(UoW.Object, map.Object));
-            ServiceManager m = new ServiceManager(lTour, lGame);
+
+
+            //(IMapper mapper, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
+
+            //var lAuth = new Lazy<IAuthService>(() => new AuthService(map.Object, new UserManager<User> x, new RoleManager role, IConfiguration config));
+            Lazy<IAuthService> lAuth = null;
+            ServiceManager m = new ServiceManager(lTour, lGame, lAuth);
 
             TournamentDetailsController controller = new TournamentDetailsController(m);
             controller.ObjectValidator = mockValidator.Object;
