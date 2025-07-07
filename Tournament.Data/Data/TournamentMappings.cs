@@ -20,6 +20,10 @@ public class TournamentMappings : Profile
 
         CreateMap<Game, GameDto>();
         CreateMap<Game, GameCreateDto>().ReverseMap();
-        CreateMap<Game, GameUpdateDto>().ReverseMap(); 
+        CreateMap<Game, GameUpdateDto>().ReverseMap();
+
+    //    CreateMap<User, EmployeeUpdateDto>().ReverseMap();
+        CreateMap<UserForRegistrationDto, User>().ReverseMap();
+
     }
 }
