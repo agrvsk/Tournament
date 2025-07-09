@@ -80,7 +80,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         //var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
 
         //IEnumerable<TournamentDto> dtos
-        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort, fi.PageNumber, fi.PageSize);
+        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi);
         if (retur.IsSuccess)
         {
             if (retur.Pagination != null)

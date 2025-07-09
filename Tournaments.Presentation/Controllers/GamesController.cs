@@ -11,6 +11,7 @@ using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
 
 namespace Tournaments.Presentation.Controllers;
 
@@ -37,14 +38,15 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort, int pageNr=1, int pageSize=20)
+  //public async Task<ActionResult<IEnumerable<GameDto>>> GetGame(bool sort, int pageNr = 1, int pageSize = 20)
+    public async Task<ActionResult<IEnumerable<GameDto>>> GetGame([FromQuery]GameRequestParams gParams)
     {
 
         //return await _context.Game.ToListAsync();
         //return Ok(await _context.GameRepository.GetAllAsync());
-        if (pageSize > maxGamesPerPage)
-            pageSize = maxGamesPerPage;
-        var result = await _serviceManager.GameService.GetAllAsync(sort, pageNr, pageSize);
+        if (gParams.PageSize > maxGamesPerPage)
+            gParams.PageSize = maxGamesPerPage;
+        var result = await _serviceManager.GameService.GetAllAsync(gParams);
  
         if (result.IsSuccess)
         {
@@ -73,32 +75,32 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
 
     // GET: api/Games/T
     [HttpGet("T")]
-    public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title, int pageNr = 1, int pageSize = 20)
-    {
-        if (pageSize > maxGamesPerPage)
-            pageSize = maxGamesPerPage;
+    //public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title, int pageNr = 1, int pageSize = 20)
+    //{
+    //    if (pageSize > maxGamesPerPage)
+    //        pageSize = maxGamesPerPage;
 
-        var result = await _serviceManager.GameService.GetByTitleAsync(title, pageNr, pageSize);
-        if (result.IsSuccess)
-        {
-            if (result.Pagination != null)
-                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
+    //    var result = await _serviceManager.GameService.GetByTitleAsync(title, pageNr, pageSize);
+    //    if (result.IsSuccess)
+    //    {
+    //        if (result.Pagination != null)
+    //            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
 
-            return Ok(result.Data);
-        }
-        else
-        {
-            return StatusCode(result.StatusCode);
-        }
-        //var game = await _context.GameRepository.GetByTitleAsync(title);
+    //        return Ok(result.Data);
+    //    }
+    //    else
+    //    {
+    //        return StatusCode(result.StatusCode);
+    //    }
+    //    //var game = await _context.GameRepository.GetByTitleAsync(title);
 
-        //if (game == null)
-        //{
-        //    return NotFound();
-        //}
-        //var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
-        //return Ok(dtos);
-    }
+    //    //if (game == null)
+    //    //{
+    //    //    return NotFound();
+    //    //}
+    //    //var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
+    //    //return Ok(dtos);
+    //}
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GameDto>> GetGame(int id)

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
 using Tournament.Data.Data;
 
 namespace Tournament.Data.Repositories;
@@ -24,20 +25,21 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         return await context.TournamentDetails.AnyAsync(x => x.Id == id);
     }
 
-    public async Task<(IEnumerable<TournamentDetails>,PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20)
+    //public async Task<(IEnumerable<TournamentDetails>,PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20)
+     public async Task<(IEnumerable<TournamentDetails>, PaginationMetadataDto)> GetAllAsync(TournamentRequestParams tParam)
     {
         IQueryable<TournamentDetails> data = context.TournamentDetails;
         var total = await data.CountAsync();
-        var pg = new PaginationMetadataDto(total, pageSize, pageNr);
+        var pg = new PaginationMetadataDto(total, tParam.PageSize, tParam.PageNumber);
 
-        if (sort)
+        if (tParam.Sort)
             data = data.OrderBy(x => x.Title);
 
         data = data
-            .Skip(pageSize * (pageNr - 1))
-            .Take(pageSize);
+            .Skip(tParam.PageSize * (tParam.PageNumber - 1))
+            .Take(tParam.PageSize);
 
-        if (showGames)
+        if (tParam.ShowGames)
             data = data.Include(x => x.Games);
 
         return (await data.ToListAsync(), pg);

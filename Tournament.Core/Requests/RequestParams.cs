@@ -30,7 +30,7 @@ public class GameRequestParams : RequestParams
 {
     [DefaultValue(false)]
     public bool Sort { get; set; } = false;
-
+//    [DefaultValue("")]
     public string? Title { get; set; }
 }
 

@@ -4,11 +4,13 @@ using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
 namespace Tournaments.Services;
 
 public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
 {
-    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 20)
+  //public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 20)
+    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(GameRequestParams gParams)
     {
         ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
         retur.Message = string.Empty;
@@ -17,7 +19,7 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         retur.Pagination = null;
         retur.StatusCode = 500;
 
-        (IEnumerable objects, PaginationMetadataDto pg) = await _uow.GameRepository.GetAllAsync(sorted, pageNr, pageSize);
+        (IEnumerable objects, PaginationMetadataDto pg) = await _uow.GameRepository.GetAllAsync(gParams);
         retur.Pagination = pg;
 
         if (objects == null)
@@ -55,27 +57,27 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         return (retur);
     }
 
-    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20)
-    {
-        ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
-        retur.Message = string.Empty;
-        retur.IsSuccess = false;
-        retur.Data = null;
-        retur.Pagination = null;
-        retur.StatusCode = 500;
+    //public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20)
+    //{
+    //    ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
+    //    retur.Message = string.Empty;
+    //    retur.IsSuccess = false;
+    //    retur.Data = null;
+    //    retur.Pagination = null;
+    //    retur.StatusCode = 500;
 
-        (IEnumerable games, var pg) = await _uow.GameRepository.GetByTitleAsync(title, pageNr ,  pageSize );
-        if (games == null)
-        {
-            retur.Message = $"No game with title {title} was not found.";
-            return retur;
-        }
-        retur.IsSuccess = true;
-        retur.Data = _mapper.Map<IEnumerable<GameDto>>(games);
-        retur.Pagination = pg;
-        retur.StatusCode = 200;
-        return retur;
-    }
+    //    (IEnumerable games, var pg) = await _uow.GameRepository.GetByTitleAsync(title, pageNr ,  pageSize );
+    //    if (games == null)
+    //    {
+    //        retur.Message = $"No game with title {title} was not found.";
+    //        return retur;
+    //    }
+    //    retur.IsSuccess = true;
+    //    retur.Data = _mapper.Map<IEnumerable<GameDto>>(games);
+    //    retur.Pagination = pg;
+    //    retur.StatusCode = 200;
+    //    return retur;
+    //}
 
 
     public async Task<ResultObjectDto<GameDto>> CreateAsync(GameCreateDto dto)
