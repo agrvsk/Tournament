@@ -3,38 +3,47 @@ using AutoMapper;
 using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
+using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
 using Tournament.Core.Requests;
+using Tournament.Core.Responses;
 namespace Tournaments.Services;
 
 public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
 {
-  //public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 20)
-    public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(GameRequestParams gParams)
+    //public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(bool sorted = false, int pageNr = 1, int pageSize = 20)
+    //ApiBaseResponse
+    //public async Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(GameRequestParams gParams)
+    public async Task<ApiBaseResponse> GetAllAsync(GameRequestParams gParams)
     {
-        ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
-        retur.Message = string.Empty;
-        retur.IsSuccess = false;
-        retur.Data = null;
-        retur.Pagination = null;
-        retur.StatusCode = 500;
+        //ResultObjectDto<IEnumerable<GameDto>> retur = new ResultObjectDto<IEnumerable<GameDto>>();
+        //retur.Message = string.Empty;
+        //retur.IsSuccess = false;
+        //retur.Data = null;
+        //retur.Pagination = null;
+        //retur.StatusCode = 500;
 
         //(IEnumerable objects, PaginationMetadataDto pg) 
         var pgList = await _uow.GameRepository.GetAllAsync(gParams);
-        retur.Pagination = pgList.MetaData;
-
-        if (pgList.Items == null)
-        {
-            retur.Message = $"No Game was found";
-            return retur;
-        }
 
         IEnumerable<GameDto> dtos = _mapper.Map<IEnumerable<GameDto>>(pgList.Items);
-        retur.IsSuccess = true;
-        retur.StatusCode=200;
-        retur.Data = dtos;
-        //return (dtos, pg);
-        return (retur);
+        ApiOkResponse<IEnumerable<GameDto>> res = new ApiOkResponse<IEnumerable<GameDto>>(dtos, pgList.MetaData);
+        return res;
+
+        //retur.Pagination = pgList.MetaData;
+
+        //if (pgList.Items == null)
+        //{
+        //    retur.Message = $"No Game was found";
+        //    return retur;
+        //}
+
+        //IEnumerable<GameDto> dtos = _mapper.Map<IEnumerable<GameDto>>(pgList.Items);
+        //retur.IsSuccess = true;
+        //retur.StatusCode=200;
+        //retur.Data = dtos;
+        ////return (dtos, pg);
+        //return (retur);
     }
 
     public async Task<ResultObjectDto<GameDto>> GetAsync(int id)
@@ -83,6 +92,13 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
 
     public async Task<ResultObjectDto<GameDto>> CreateAsync(GameCreateDto dto)
     {
+        //Max 10 Games/Tournament
+        if ( await _uow.GameRepository.GetGameCount(dto.TournamentDetailsId) > 9)
+        {
+            throw new TournamentFullException(dto.TournamentDetailsId);
+        }
+
+
         ResultObjectDto<GameDto> retur = new ResultObjectDto<GameDto>();
         retur.IsSuccess = false;
         retur.Data = null;

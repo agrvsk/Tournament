@@ -17,7 +17,7 @@ public class PagedList<T>
         MetaData = new MetaData
         (
             CurrentPage: pageNumber,
-//          TotalPages: (int)Math.Ceiling(count / (double) pageSize),
+        //    TotalPages: (int)Math.Ceiling(count / (double) pageSize),
             PageSize: pageSize,
             TotalCount: count
         );

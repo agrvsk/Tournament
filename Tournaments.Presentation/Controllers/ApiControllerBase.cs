@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Tournament.Core.Requests;
 using Tournament.Core.Responses;
 
 namespace Tournaments.Presentation.Controllers;
@@ -8,6 +11,13 @@ namespace Tournaments.Presentation.Controllers;
 [ApiController]
 public class ApiControllerBase : ControllerBase
 {
+    [NonAction]
+    public void Add2Header(MetaData paginering)
+    {
+        if (paginering == null) return;
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginering));
+    }
+
     [NonAction]
     public ActionResult ProcessError(ApiBaseResponse baseResponse)
     {

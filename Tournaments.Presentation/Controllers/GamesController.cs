@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
@@ -12,13 +13,14 @@ using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Core.Requests;
+using Tournament.Core.Responses;
 
 namespace Tournaments.Presentation.Controllers;
 
 //[Route("api/TournamentDetails/{TournamentDetailsId}/Games")]
 [Route("api/Games")]
 [ApiController]
-public class GamesController(IServiceManager _serviceManager) : ControllerBase
+public class GamesController(IServiceManager _serviceManager) : ApiControllerBase
 {
     readonly int maxGamesPerPage = 100;
     //private readonly TournamentContext _context;
@@ -46,19 +48,31 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
         //return Ok(await _context.GameRepository.GetAllAsync());
         if (gParams.PageSize > maxGamesPerPage)
             gParams.PageSize = maxGamesPerPage;
-        var result = await _serviceManager.GameService.GetAllAsync(gParams);
- 
-        if (result.IsSuccess)
-        {
-            if (result.Pagination != null)
-                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
 
-            return Ok(result.Data);
+        var response = await _serviceManager.GameService.GetAllAsync(gParams);
+        if (response.Success)
+        {
+            Add2Header(response.Paginering);
+            return Ok(response.GetOkResult<IEnumerable<GameDto>>());
+//            return response.Success ? Ok(response.GetOkResult<IEnumerable<GameDto>>()) : ProcessError(response);
+
         }
         else
         {
-            return StatusCode(result.StatusCode);
+            return ProcessError(response);
         }
+
+        //if (result.IsSuccess)
+        //{
+        //    if (result.Pagination != null)
+        //        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
+
+        //    return Ok(result.Data);
+        //}
+        //else
+        //{
+        //    return StatusCode(result.StatusCode);
+        //}
             //var (allGames, pagination) = await _context.GameRepository.GetAllAsync(sort,pageNr,pageSize);
             //if (
             //  allGames == null || 

@@ -25,6 +25,12 @@ public class GameRepository(TournamentContext context) : IGameRepository
     {
         return await context.Game.AnyAsync(o => o.Id == id);
     }
+    public async Task<int> GetGameCount(int TournamentId)
+    {
+        return await context.Game
+            .Where(g => g.TournamentDetailsId == TournamentId)
+            .CountAsync();
+    }
 
   //public async Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(bool sort=false, int pageNr = 1, int pageSize = 20)
     public async Task<PagedList<Game>> GetAllAsync(GameRequestParams gParams)

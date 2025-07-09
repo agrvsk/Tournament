@@ -38,6 +38,7 @@ public static class ExceptionMiddleware
                 context,
                 StatusCodes.Status404NotFound,
                 title: tournamentNotFoundException.Title,
+                type: context.Request.Method,
                 detail: tournamentNotFoundException.Message,
                 instance: context.Request.Path),
 
@@ -46,14 +47,24 @@ public static class ExceptionMiddleware
                 context,
                 StatusCodes.Status404NotFound,
                 title: gameNotFoundException.Title,
+                type: context.Request.Method,
                 detail: gameNotFoundException.Message,
                 instance: context.Request.Path),
 
+            TournamentFullException tournamentFullException
+            => problemDetailsFactory.CreateProblemDetails(
+                context,
+                StatusCodes.Status405MethodNotAllowed,
+                title: tournamentFullException.Title,
+                type: context.Request.Method,
+                detail: tournamentFullException.Message,
+                instance: context.Request.Path),
 
             _ => problemDetailsFactory.CreateProblemDetails(
                 context,
                 StatusCodes.Status500InternalServerError,
                 title: "Internal Server Error",
+                type: context.Request.Method,
                 detail: app.Environment.IsDevelopment() ? error.Message : "Un unexpected error occured.")
         };
     }

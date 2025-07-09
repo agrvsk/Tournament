@@ -6,20 +6,21 @@ using System.Threading.Tasks;
 
 namespace Tournament.Core.Requests;
 
-public class MetaData(int CurrentPage,  int PageSize, int TotalCount) 
+public class MetaData (int CurrentPage,  int PageSize, int TotalCount) //int TotalPages,
 {
-    public int CurrentPage { get; }
-    public int TotalPages { get; } = (int)Math.Ceiling(TotalCount / (double)PageSize);
-    public int PageSize { get; }
-    public int TotalCount { get; }
+    public int CurrentPage { get; set; } = CurrentPage;
+    public int PageSize { get; set; } = PageSize;
+    public int TotalCount { get; set; } = TotalCount;
+    public int TotalPages { get; set; } = ((int)Math.Ceiling(TotalCount / (double)PageSize));
+
     public bool HasPrevious => CurrentPage > 1;
     public bool HasNext => CurrentPage < TotalPages;
 
-    //public MetaData(int currentPage, int totalPages, int pageSize, int totalCount)
+    //public MetaData(int CurrentPage, int TotalPages, int PageSize, int TotalCount)
     //{
-    //    CurrentPage = currentPage;
-    //    TotalPages = totalPages;
-    //    PageSize = pageSize;
-    //    TotalCount = totalCount;
+    //    this.CurrentPage = CurrentPage;
+    //    this.TotalPages = TotalPages;
+    //    this.PageSize = PageSize;
+    //    this.TotalCount = TotalCount;
     //}
 }
