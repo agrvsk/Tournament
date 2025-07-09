@@ -11,6 +11,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 //using Bogus.DataSets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,17 +20,18 @@ using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
 using static System.Net.WebRequestMethods;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 //using Tournament.Data.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-namespace Tournament.Api.Controllers;
+namespace Tournaments.Presentation.Controllers;
 
 [Route("api/TournamentDetails")]
 [ApiController]
-public class TournamentDetailsController(IServiceManager _serviceManager) : ControllerBase
+public class TournamentDetailsController(IServiceManager _serviceManager) : ControllerBase  //, UserManager<User> _userManager
 {
     readonly int maxToursPerPage = 100;
     //private readonly TournamentContext _context;
@@ -48,20 +50,24 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
     //    _mapper = mapper;
     //}
 
-    public class FilterObject
-    {
-        public bool ShowGames { get; set; }
-        public bool Sort { get; set; }
-        [DefaultValue(1)]
-        public int PageNr { get; set; } = 1;
-        [DefaultValue(20)]
-        public int PageSize { get; set; } = 20;
-    }
+    //public class FilterObject
+    //{
+    //    public bool ShowGames { get; set; }
+    //    public bool Sort { get; set; }
+    //    [DefaultValue(1)]
+    //    public int PageNumber { get; set; } = 1;
+    //    [DefaultValue(20)]
+    //    public int PageSize { get; set; } = 20;
+    //}
     // GET: api/TournamentDetails
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery] FilterObject fi)
+    public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery] TournamentRequestParams fi)
   //public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool showGames, bool sort)
     {
+        //var auth = User.Identity.IsAuthenticated;
+        //var userName = _userManager.GetUserName(User);
+        //var user = await _userManager.GetUserAsync(User);
+
         if (fi.PageSize > maxToursPerPage)
             fi.PageSize = maxToursPerPage;
         //return await _context.TournamentDetails.ToListAsync();
@@ -74,7 +80,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         //var dto = _mapper.Map<IEnumerable<TournamentDto>>(torments);
 
         //IEnumerable<TournamentDto> dtos
-        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort, fi.PageNr, fi.PageSize);
+        var retur  = await _serviceManager.TournamentService.GetAllAsync(fi.ShowGames, fi.Sort, fi.PageNumber, fi.PageSize);
         if (retur.IsSuccess)
         {
             if (retur.Pagination != null)

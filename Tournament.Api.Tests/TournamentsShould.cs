@@ -13,15 +13,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Service.Contracts;
-using Services.Contracts;
-using Tournament.Api.Controllers;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
+using Tournaments.Presentation.Controllers;
 using Tournaments.Services;
-using static Tournament.Api.Controllers.TournamentDetailsController;
+using static Tournaments.Presentation.Controllers.TournamentDetailsController;
 
 namespace Tournament.Api.Tests;
 

@@ -1,5 +1,4 @@
 using System.Reflection.Metadata;
-using Companies.API.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +69,7 @@ namespace Tournament.API
 
             builder.Services.ConfigureCors();
             var app = builder.Build();
+            app.ConfigureExceptionHandler();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

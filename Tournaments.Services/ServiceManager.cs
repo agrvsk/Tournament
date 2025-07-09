@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Service.Contracts;
-using Services.Contracts;
 
 namespace Tournaments.Services;
 

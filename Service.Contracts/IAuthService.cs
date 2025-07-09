@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Tournament.Core.DTOs;
 
-namespace Services.Contracts
+namespace Service.Contracts
 {
     public interface IAuthService
     {

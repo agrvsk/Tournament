@@ -1,47 +1,45 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
-using Services.Contracts;
 using Tournament.Core.DTOs;
 
-namespace Companies.Presentation.Controllers
+namespace Tournaments.Presentation.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    private readonly IServiceManager serviceManager;
+
+    public AuthController(IServiceManager serviceManager)
     {
-        private readonly IServiceManager serviceManager;
+        this.serviceManager = serviceManager;
+    }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers() 
+    {
+        var result = await serviceManager.AuthService.GetAllUsersAsync();
+        return Ok(result.Data);
+    }
 
-        public AuthController(IServiceManager serviceManager)
+    [HttpPost]
+    public async Task<ActionResult> RegisterUser(UserForRegistrationDto registrationDto)
+    {
+        var result = await serviceManager.AuthService.RegisterUserAsync(registrationDto);
+        return result.Succeeded ? StatusCode(StatusCodes.Status201Created) : BadRequest(result.Errors);
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult> Authenticate(UserForAuthDto userForAuthDto)
+    {
+        if (!await serviceManager.AuthService.ValidateUserAsync(userForAuthDto))
         {
-            this.serviceManager = serviceManager;
-        }
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers() 
-        {
-            var result = await serviceManager.AuthService.GetAllUsersAsync();
-            return Ok(result.Data);
+            return Unauthorized();
         }
 
-        [HttpPost]
-        public async Task<ActionResult> RegisterUser(UserForRegistrationDto registrationDto)
-        {
-            var result = await serviceManager.AuthService.RegisterUserAsync(registrationDto);
-            return result.Succeeded ? StatusCode(StatusCodes.Status201Created) : BadRequest(result.Errors);
-        }
+        // var token = new { Token = await serviceManager.AuthService.CreateTokenAsync() };
+        TokenDto token = await serviceManager.AuthService.CreateTokenAsync(expireTime: true);
 
-        [HttpPost("login")]
-        public async Task<ActionResult> Authenticate(UserForAuthDto userForAuthDto)
-        {
-            if (!await serviceManager.AuthService.ValidateUserAsync(userForAuthDto))
-            {
-                return Unauthorized();
-            }
-
-            // var token = new { Token = await serviceManager.AuthService.CreateTokenAsync() };
-            TokenDto token = await serviceManager.AuthService.CreateTokenAsync(expireTime: true);
-
-            return Ok(token);
-        }
+        return Ok(token);
     }
 }

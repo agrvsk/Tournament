@@ -1,26 +1,25 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Services.Contracts;
+using Service.Contracts;
 using Tournament.Core.DTOs;
 
-namespace Companies.Presentation.Controllers
+namespace Tournaments.Presentation.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class TokenController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TokenController : ControllerBase
+    private readonly IAuthService authService;
+
+    public TokenController(IAuthService authService)
     {
-        private readonly IAuthService authService;
+        this.authService = authService;
+    }
 
-        public TokenController(IAuthService authService)
-        {
-            this.authService = authService;
-        }
-
-        [HttpPost("refresh")]
-        public async Task<ActionResult> RefreshToken(TokenDto token)
-        {
-            TokenDto tokenDto = await authService.RefreshTokenAsync(token);
-            return Ok(tokenDto);
-        }
+    [HttpPost("refresh")]
+    public async Task<ActionResult> RefreshToken(TokenDto token)
+    {
+        TokenDto tokenDto = await authService.RefreshTokenAsync(token);
+        return Ok(tokenDto);
     }
 }
