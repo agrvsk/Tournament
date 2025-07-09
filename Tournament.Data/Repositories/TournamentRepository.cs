@@ -26,23 +26,27 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
     }
 
     //public async Task<(IEnumerable<TournamentDetails>,PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20)
-     public async Task<(IEnumerable<TournamentDetails>, PaginationMetadataDto)> GetAllAsync(TournamentRequestParams tParam)
+     public async Task<PagedList<TournamentDetails>> GetAllAsync(TournamentRequestParams tParams)
     {
         IQueryable<TournamentDetails> data = context.TournamentDetails;
-        var total = await data.CountAsync();
-        var pg = new PaginationMetadataDto(total, tParam.PageSize, tParam.PageNumber);
 
-        if (tParam.Sort)
-            data = data.OrderBy(x => x.Title);
-
-        data = data
-            .Skip(tParam.PageSize * (tParam.PageNumber - 1))
-            .Take(tParam.PageSize);
-
-        if (tParam.ShowGames)
+        if (tParams.ShowGames)
             data = data.Include(x => x.Games);
 
-        return (await data.ToListAsync(), pg);
+        if (tParams.Sort)
+            data = data.OrderBy(x => x.Title);
+
+        //return;
+        return await PagedList<TournamentDetails>.CreateAsync(data, tParams.PageNumber, tParams.PageSize);
+
+        //var total = await data.CountAsync();
+        //var pg = new PaginationMetadataDto(total, tParams.PageSize, tParams.PageNumber);
+
+        //data = data
+        //    .Skip(tParams.PageSize * (tParams.PageNumber - 1))
+        //    .Take(tParams.PageSize);
+
+        //return (await data.ToListAsync(), pg);
 
         //return showGames ? SortFunc( await context.TournamentDetails.Include(c => c.Games ).ToArrayAsync(),sort)
         //                 : SortFunc( await context.TournamentDetails.ToArrayAsync(), sort);

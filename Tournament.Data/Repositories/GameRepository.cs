@@ -10,6 +10,7 @@ using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using Tournament.Core.Requests;
 using Tournament.Data.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tournament.Data.Repositories;
 
@@ -26,24 +27,25 @@ public class GameRepository(TournamentContext context) : IGameRepository
     }
 
   //public async Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(bool sort=false, int pageNr = 1, int pageSize = 20)
-    public async Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(GameRequestParams gParams)
+    public async Task<PagedList<Game>> GetAllAsync(GameRequestParams gParams)
     {
         var filter = context.Game.AsQueryable<Game>();
+
         if (!string.IsNullOrEmpty(gParams.Title))
             filter = filter.Where(o => o.Title.Equals(gParams.Title));
-       
 
-        var total = await filter.CountAsync();
-        var xxx = new PaginationMetadataDto(total, gParams.PageSize, gParams.PageNumber);
+        if (gParams.Sort)
+            filter = filter.OrderBy(o => o.Title);
 
-        return (gParams.Sort ? await filter.OrderBy(o => o.Title)
-                    .Skip(gParams.PageSize * (gParams.PageNumber - 1) )
-                    .Take(gParams.PageSize)
-                    .ToListAsync() 
-                    : await filter
-                    .Skip(gParams.PageSize * (gParams.PageNumber - 1))
-                    .Take(gParams.PageSize)
-                    .ToListAsync(), xxx );
+        return await PagedList<Game>.CreateAsync(filter, gParams.PageNumber, gParams.PageSize);
+
+        //var total = await filter.CountAsync();
+        //var xxx = new PaginationMetadataDto(total, gParams.PageSize, gParams.PageNumber);
+        //var data = await filter
+        //            .Skip(gParams.PageSize * (gParams.PageNumber - 1))
+        //            .Take(gParams.PageSize)
+        //            .ToListAsync();
+        //return (data, xxx );
     }
 
     public async Task<Game> GetAsync(int id)

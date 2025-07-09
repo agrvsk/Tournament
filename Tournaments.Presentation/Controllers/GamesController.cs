@@ -74,7 +74,7 @@ public class GamesController(IServiceManager _serviceManager) : ControllerBase
 
 
     // GET: api/Games/T
-    [HttpGet("T")]
+    //[HttpGet("T")]
     //public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title, int pageNr = 1, int pageSize = 20)
     //{
     //    if (pageSize > maxGamesPerPage)

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -15,9 +16,12 @@ using Microsoft.VisualBasic;
 using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
+using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
 using Tournament.Core.Requests;
+using Tournament.Core.Responses;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tournaments.Services;
 
@@ -33,15 +37,17 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
         retur.Pagination = null;
         retur.StatusCode = 500;
 
-        (IEnumerable objects, var pg) = await _uow.TournamentRepository.GetAllAsync(tParams);
-        if (objects == null)
+        //(IEnumerable objects, var pg) = 
+        var pgList = await _uow.TournamentRepository.GetAllAsync(tParams);
+        
+        if (pgList.Items == null)
         {
             retur.IsSuccess = false;
             retur.Message = $"No Tournaments found";
             return retur;
         }
-        retur.Data = _mapper.Map<IEnumerable<TournamentDto>>(objects);
-        retur.Pagination = pg;
+        retur.Data = _mapper.Map<IEnumerable<TournamentDto>>(pgList.Items);
+        retur.Pagination = pgList.MetaData;
         retur.IsSuccess = true;
         return retur;
     }
@@ -58,14 +64,24 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
         TournamentDetails? tournament = await _uow.TournamentRepository.GetAsync(id, showGames);
         if (tournament == null)
         {
+            //throw new TournamentNotFoundException(id);
+            //return new TournamentNotFoundResponse(id);
+
+
             retur.IsSuccess = false;
             retur.Message = $"Tournament with id {id} Not found";
             return retur;
         }
-        retur.Data = _mapper.Map<TournamentDto>(tournament);
+        var data = _mapper.Map<TournamentDto>(tournament);
+
+        ApiBaseResponse x = new ApiOkResponse<TournamentDto>(data);
+
+        retur.Data = data;
         retur.IsSuccess = true;
         retur.StatusCode = 200;
         return retur;
+
+
     }
 
     public async Task<ResultObjectDto<TournamentDto>> CreateAsync(TournamentCreateDto dto)

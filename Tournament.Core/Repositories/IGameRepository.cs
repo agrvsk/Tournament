@@ -12,7 +12,7 @@ namespace Tournament.Core.Repositories;
 public interface IGameRepository
 {
   //Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(bool sort = false, int pageNr = 1, int pageSize = 20);
-    Task<(IEnumerable<Game>, PaginationMetadataDto)> GetAllAsync(GameRequestParams gParams);
+    Task<PagedList<Game>> GetAllAsync(GameRequestParams gParams);
     Task<Game> GetAsync(int id);
   //Task<(IEnumerable<Game>, PaginationMetadataDto)> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20);
     Task<bool> AnyAsync(int id);

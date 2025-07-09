@@ -19,16 +19,17 @@ public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService
         retur.Pagination = null;
         retur.StatusCode = 500;
 
-        (IEnumerable objects, PaginationMetadataDto pg) = await _uow.GameRepository.GetAllAsync(gParams);
-        retur.Pagination = pg;
+        //(IEnumerable objects, PaginationMetadataDto pg) 
+        var pgList = await _uow.GameRepository.GetAllAsync(gParams);
+        retur.Pagination = pgList.MetaData;
 
-        if (objects == null)
+        if (pgList.Items == null)
         {
             retur.Message = $"No Game was found";
             return retur;
         }
 
-        IEnumerable<GameDto> dtos = _mapper.Map<IEnumerable<GameDto>>(objects);
+        IEnumerable<GameDto> dtos = _mapper.Map<IEnumerable<GameDto>>(pgList.Items);
         retur.IsSuccess = true;
         retur.StatusCode=200;
         retur.Data = dtos;
