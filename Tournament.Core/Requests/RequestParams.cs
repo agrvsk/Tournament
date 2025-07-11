@@ -33,4 +33,7 @@ public class GameRequestParams : RequestParams
 //    [DefaultValue("")]
     public string? Title { get; set; }
 }
+public class UserRequestParams : RequestParams
+{ 
+}
 

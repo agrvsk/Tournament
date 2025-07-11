@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using AutoMapper;
@@ -87,47 +88,19 @@ public class GamesController(IServiceManager _serviceManager) : ApiControllerBas
     }
 
 
-    // GET: api/Games/T
-    //[HttpGet("T")]
-    //public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(string title, int pageNr = 1, int pageSize = 20)
-    //{
-    //    if (pageSize > maxGamesPerPage)
-    //        pageSize = maxGamesPerPage;
-
-    //    var result = await _serviceManager.GameService.GetByTitleAsync(title, pageNr, pageSize);
-    //    if (result.IsSuccess)
-    //    {
-    //        if (result.Pagination != null)
-    //            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.Pagination));
-
-    //        return Ok(result.Data);
-    //    }
-    //    else
-    //    {
-    //        return StatusCode(result.StatusCode);
-    //    }
-    //    //var game = await _context.GameRepository.GetByTitleAsync(title);
-
-    //    //if (game == null)
-    //    //{
-    //    //    return NotFound();
-    //    //}
-    //    //var dtos = _mapper.Map<IEnumerable<GameDto>>(game);
-    //    //return Ok(dtos);
-    //}
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GameDto>> GetGame(int id)
     {
         //var game = await _context.Game.SingleOrDefaultAsync(g => g.Id == id);
         var result=await _serviceManager.GameService.GetAsync(id);
-        if (result.IsSuccess)
+        if (result.Success)
         {
-            return Ok(result.Data);
+            return Ok(result.GetOkResult<GameDto>());
         }
         else
         {
-            return StatusCode(result.StatusCode);
+            return ProcessError(result);
         }
         //var game = await _context.GameRepository.GetAsync(id);
         //if (game == null)
@@ -154,13 +127,14 @@ public class GamesController(IServiceManager _serviceManager) : ApiControllerBas
             return BadRequest();
         }
         var retur = await _serviceManager.GameService.UpdateAsync(dto);
-        if (retur.IsSuccess)
+        if (retur.Success)
         {
+            retur.GetOkResult<GameUpdateDto>();
             return NoContent();
         }
         else
         {
-            return StatusCode(retur.StatusCode);
+            return ProcessError(retur);
         }
 
 //        var gameExist = await _context.GameRepository.GetAsync(id);
@@ -202,7 +176,7 @@ public class GamesController(IServiceManager _serviceManager) : ApiControllerBas
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
     //[Route("/api/TournamentDetails/{TournamentDetailsId}/Games")]
-    public async Task<ActionResult<Game>> PostGame( GameCreateDto dto)
+    public async Task<ActionResult<GameUpdateDto>> PostGame( GameCreateDto dto)
     {
         TryValidateModel(dto);
         if (!ModelState.IsValid)
@@ -234,13 +208,14 @@ public class GamesController(IServiceManager _serviceManager) : ApiControllerBas
 
 
         var retur = await _serviceManager.GameService.CreateAsync(dto);
-        if (retur.IsSuccess)
+        if (retur.Success)
         {
-            return CreatedAtAction(nameof(GetGame), new { id = retur.Id }, retur.Data);
+            var u_dto = retur.GetOkResult<GameUpdateDto>();
+            return CreatedAtAction(nameof(GetGame), new { id = u_dto.Id }, retur.GetOkResult<GameUpdateDto>() );
         }
         else
         {
-            return StatusCode(retur.StatusCode);
+            return ProcessError(retur);
         }
         //return CreatedAtAction(nameof(GetGame), new { id = game.Id,  TournamentDetailsId=game.TournamentDetailsId }, game);
         //return CreatedAtAction(nameof(GetGame), new { id = game.Id }, game);
@@ -251,12 +226,12 @@ public class GamesController(IServiceManager _serviceManager) : ApiControllerBas
     public async Task<IActionResult> DeleteGame(int id)
     {
         var result = await _serviceManager.GameService.DeleteAsync(id);
-        if (result.IsSuccess)
+        if (result.Success)
         {
             return NoContent();
         }
         else
-            return StatusCode(result.StatusCode);
+            return ProcessError(result); 
 
         //    //        var game = await _context.Game.FindAsync(id);
         //    var game = await _context.GameRepository.GetAsync(id);

@@ -11,7 +11,6 @@ namespace Tournament.Core.Repositories;
 
 public interface ITournamentRepository
 {
-    //Task<(IEnumerable<TournamentDetails>, PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20);
     Task<PagedList<TournamentDetails>> GetAllAsync(TournamentRequestParams tParams);
     Task<TournamentDetails> GetAsync(int id, bool showGames=false);
     Task<bool> AnyAsync(int id);

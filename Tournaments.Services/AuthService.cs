@@ -11,6 +11,8 @@ using Service.Contracts;
 using Tournament.Core.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
+using Tournament.Core.Responses;
 
 namespace Tournaments.Services;
 
@@ -199,23 +201,22 @@ public class AuthService : IAuthService
 
     }
 
-    public async Task<ResultObjectDto<IEnumerable<UserForRegistrationDto>>> GetAllUsersAsync()
+    public async Task<ApiBaseResponse> GetAllUsersAsync(UserRequestParams uParams)
+  //public async Task<ResultObjectDto<IEnumerable<UserForRegistrationDto>>> GetAllUsersAsync()
     {
-        ResultObjectDto<IEnumerable<UserForRegistrationDto>> retur = new ResultObjectDto<IEnumerable<UserForRegistrationDto>>();
-        retur.Message = string.Empty;
-        retur.IsSuccess = true;
-        retur.Data = null;
-        retur.Pagination = null;
-        retur.StatusCode = 200;
+        var objects = await _uow.UserRepository.GetUsersAsync(uParams);  //AllAsync(sorted, pageNr, pageSize);
 
-        var objects = await _uow.UserRepository.GetUsersAsync();  //AllAsync(sorted, pageNr, pageSize);
-
-        IEnumerable<UserForRegistrationDto> dtos = mapper.Map<IEnumerable<UserForRegistrationDto>>(userManager.Users.ToList<User>());
+        if (objects == null)
+        {
+            return new NoUserFoundResponse();
+        }
         //await userManager.Users.ToListAsync();
-        retur.Data = dtos;
+        //IEnumerable<UserForRegistrationDto> dtos = mapper.Map<IEnumerable<UserForRegistrationDto>>(userManager.Users.ToList<User>());
+        IEnumerable<UserForRegistrationDto> dtos = mapper.Map<IEnumerable<UserForRegistrationDto>>(objects.Items);
 
+        return new ApiOkResponse<IEnumerable<UserForRegistrationDto>>(dtos,objects.MetaData);
 
-        return retur;
+        //return retur;
     }
 }
 

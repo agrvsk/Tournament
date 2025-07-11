@@ -8,12 +8,14 @@ namespace Tournament.Core.Exceptions;
 
 public abstract class NotFoundException(string Message, string Title = "Not found") : Exception(Message)
 {
-    public string Title { get; set; }
+    public string Title { get; set; } = Title;
     //protected NotFoundException(string message, string title = "Not found") : base(message) 
     //{
     //    Title = title;
     //}
 }
+
+public sealed class NoTournamentsFoundException() : NotFoundException($"No tournaments found") { }
 
 public sealed class TournamentNotFoundException(int Id) : NotFoundException($"The tournament with id {Id} is not found")
 {
@@ -21,6 +23,7 @@ public sealed class TournamentNotFoundException(int Id) : NotFoundException($"Th
     //{
     //}
 }
+public sealed class NoGamesFoundException(int Id) : NotFoundException($"No games found") { }
 
 public sealed class GameNotFoundException(int Id) : NotFoundException($"The game with id {Id} is not found")
 {

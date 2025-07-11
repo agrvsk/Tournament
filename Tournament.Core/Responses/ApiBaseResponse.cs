@@ -48,13 +48,13 @@ public abstract class ApiNotFoundResponse(string Message) : ApiBaseResponse(fals
     //}
 }
 
-public class TournamentNotFoundResponse(int Id) : ApiNotFoundResponse($"Tournament with id {Id} not found.")
-{
-    //public CompanyNotFoundResponse(int id) : base($"Company with id {id} not found.")
-    //{
-        
-    //}
-}
-public class GameNotFoundResponse(int Id) : ApiNotFoundResponse($"Game with id {Id} not found.") 
-{ }
+public class NoTournamentsFoundResponse() : ApiNotFoundResponse($"No Tournaments were found.") { }
+public class TournamentNotFoundResponse(int Id) : ApiNotFoundResponse($"Tournament with id {Id} not found.") { }
+
+public class NoGamesFoundResponse() : ApiNotFoundResponse($"No Games were found.") { }
+public class GameNotFoundResponse(int Id) : ApiNotFoundResponse($"Game with id {Id} not found.") { }
+
+public class NoUserFoundResponse() : ApiNotFoundResponse($"No Users were found.") { }
+public class UserNotFoundResponse(int Id) : ApiNotFoundResponse($"User with id {Id} not found.") { }
+
 

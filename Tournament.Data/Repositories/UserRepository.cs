@@ -7,26 +7,23 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
+using Tournament.Core.Requests;
 using Tournament.Data.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tournament.Data.Repositories;
 
 public class UserRepository(TournamentContext context) : RepositoryBase<User>(context), IUserRepository
 {
-    //public async Task<IEnumerable<User>> GetEmployeesAsync(int companyId, bool trackChanges = false)
-    //{
-    //    // var employees = await _context.Employees.Where(e => e.CompanyId.Equals(companyId)).ToListAsync();
-
-
-    //}
-
     public async Task<User?> GetUserAsync(string userId, bool trackChanges)
     {
         return await FindByCondition(e => e.Id.Equals(userId), trackChanges).FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<User>> GetUsersAsync(bool trackChanges)
+    public async Task<PagedList<User>> GetUsersAsync(UserRequestParams uParams, bool trackChanges)
     {
-        return  await FindAll(trackChanges).ToListAsync();
+        var data = FindAll(trackChanges);
+        return await PagedList<User>.CreateAsync(data, uParams.PageNumber, uParams.PageSize);
+
     }
 }

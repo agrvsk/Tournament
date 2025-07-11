@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
 using Tournament.Core.DTOs;
+using Tournament.Core.Requests;
 
 namespace Tournaments.Presentation.Controllers;
 
@@ -16,10 +18,10 @@ public class AuthController : ControllerBase
         this.serviceManager = serviceManager;
     }
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers() 
+    public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers([FromQuery]UserRequestParams uParams) 
     {
-        var result = await serviceManager.AuthService.GetAllUsersAsync();
-        return Ok(result.Data);
+        var result = await serviceManager.AuthService.GetAllUsersAsync(uParams);
+        return Ok(result.GetOkResult<IEnumerable<UserForRegistrationDto>>());
     }
 
     [HttpPost]

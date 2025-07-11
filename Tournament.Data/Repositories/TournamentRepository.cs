@@ -26,7 +26,7 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
     }
 
     //public async Task<(IEnumerable<TournamentDetails>,PaginationMetadataDto)> GetAllAsync(bool showGames = false, bool sort = false, int pageNr = 1, int pageSize = 20)
-     public async Task<PagedList<TournamentDetails>> GetAllAsync(TournamentRequestParams tParams)
+    public async Task<PagedList<TournamentDetails>> GetAllAsync(TournamentRequestParams tParams)
     {
         IQueryable<TournamentDetails> data = context.TournamentDetails;
 
@@ -36,7 +36,6 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         if (tParams.Sort)
             data = data.OrderBy(x => x.Title);
 
-        //return;
         return await PagedList<TournamentDetails>.CreateAsync(data, tParams.PageNumber, tParams.PageSize);
 
         //var total = await data.CountAsync();
@@ -52,21 +51,11 @@ public class TournamentRepository(TournamentContext context) : ITournamentReposi
         //                 : SortFunc( await context.TournamentDetails.ToArrayAsync(), sort);
     }
 
-    public IEnumerable<TournamentDetails> SortFunc(IEnumerable<TournamentDetails>  items, bool Sort)
-    {
-        return Sort
-        ? items.OrderBy(x => x.Title)
-        : items;
-    }
-
-
-
-
 
     public async Task<TournamentDetails> GetAsync(int id, bool showGames = false)
     {
         return showGames ? await context.TournamentDetails.Include(c => c.Games).SingleOrDefaultAsync(x => x.Id == id)
-                         : await context.TournamentDetails.SingleOrDefaultAsync(x => x.Id == id);
+                         : await context.TournamentDetails                      .SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public void Remove(TournamentDetails tournament)

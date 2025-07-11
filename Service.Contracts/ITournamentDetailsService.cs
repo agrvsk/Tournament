@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Tournament.Core.DTOs;
 using Tournament.Core.Requests;
+using Tournament.Core.Responses;
 
 namespace Service.Contracts;
 
 public interface ITournamentDetailsService
 {
-  //Task<ResultObjectDto<IEnumerable<TournamentDto>>> GetAllAsync(bool showGames = false, bool sorted = false, int pageNr = 1, int pageSize = 20);
-    Task<ResultObjectDto<IEnumerable<TournamentDto>>>  GetAllAsync(TournamentRequestParams tParams);
-    Task<ResultObjectDto<TournamentDto>> GetAsync(int id, bool showGames=false);
-    Task<ResultObjectDto<TournamentDto>> CreateAsync(TournamentCreateDto create);
-    Task<ResultObjectDto<TournamentDto>> UpdateAsync(TournamentUpdateDto update);
-    Task<ResultObjectDto<TournamentDto>> UpdateAsync(int Id, JsonPatchDocument<TournamentUpdateDto> patchDocument);
-    Task<ResultObjectDto<int>> DeleteAsync(int id);
+    //Task<ResultObjectDto<IEnumerable<TournamentDto>>> GetAllAsync(bool showGames = false, bool sorted = false, int pageNr = 1, int pageSize = 20);
+    //Task<ResultObjectDto<IEnumerable<TournamentDto>>> GetAllAsync(TournamentRequestParams tParams);
+    Task<ApiBaseResponse> GetAllAsync(TournamentRequestParams tParams);
+    Task<ApiBaseResponse> GetAsync(int id, bool showGames=false);
+    Task<ApiBaseResponse> CreateAsync(TournamentCreateDto create);
+    Task<ApiBaseResponse> UpdateAsync(TournamentUpdateDto update);
+    Task<ApiBaseResponse> UpdateAsync(int Id, JsonPatchDocument<TournamentUpdateDto> patchDocument);
+    Task<ApiBaseResponse> DeleteAsync(int id);
 }

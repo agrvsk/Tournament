@@ -14,11 +14,11 @@ public interface IGameService
     Task<ApiBaseResponse> GetAllAsync(GameRequestParams gParams);
 //  Task<ResultObjectDto<IEnumerable<GameDto>>> GetAllAsync(GameRequestParams gParams);
   //Task<ResultObjectDto<IEnumerable<GameDto>>> GetByTitleAsync(string title, int pageNr = 1, int pageSize = 20);
-    Task<ResultObjectDto<GameDto>> GetAsync(int id);
+    Task<ApiBaseResponse> GetAsync(int id);
 
-    Task<ResultObjectDto<GameDto>> CreateAsync(GameCreateDto create);
-    Task<ResultObjectDto<GameDto>> UpdateAsync(GameUpdateDto update);
+    Task<ApiBaseResponse> CreateAsync(GameCreateDto create);
+    Task<ApiBaseResponse> UpdateAsync(GameUpdateDto update);
 //  Task<ResultObjectDto<GameDto>> UpdateAsync(int Id, JsonPatchDocument<GameUpdateDto> patchDocument);
-    Task<ResultObjectDto<int>> DeleteAsync(int id);
+    Task<ApiBaseResponse> DeleteAsync(int id);
 
 }

@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Data;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.XPath;
@@ -11,6 +12,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 //using Bogus.DataSets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +33,7 @@ namespace Tournaments.Presentation.Controllers;
 
 [Route("api/TournamentDetails")]
 [ApiController]
-public class TournamentDetailsController(IServiceManager _serviceManager) : ControllerBase  //, UserManager<User> _userManager
+public class TournamentDetailsController(IServiceManager _serviceManager) : ApiControllerBase  //, UserManager<User> _userManager
 {
     readonly int maxToursPerPage = 100;
     //private readonly TournamentContext _context;
@@ -81,35 +83,30 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 
         //IEnumerable<TournamentDto> dtos
         var retur  = await _serviceManager.TournamentService.GetAllAsync(fi);
-        if (retur.IsSuccess)
+        if (retur.Success)
         {
-            if (retur.Pagination != null)
-                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(retur.Pagination));
-            return Ok(retur.Data);
+            Add2Header(retur.Paginering);
+            return Ok(retur.GetOkResult<IEnumerable<TournamentDto>>());
         }
         else
         {
-            if (retur.Data == null)
-            {
-                return NotFound(Wrap(retur));
-            }
-            return StatusCode(retur.StatusCode, Wrap(retur));
+            return ProcessError(retur);
         }
 
         //if(dtos.IsNullOrEmpty()) return NotFound();
     }
 
-    public ProblemDetails Wrap<T>(ResultObjectDto<T> retur)
-    {
-        return new ProblemDetails
-        {
-            Type = "application/json",
-            Title = "Fel inträffade vid bearbetning.",
-            Detail = retur.Message,
-            Status = retur.StatusCode,
-            Instance = HttpContext.Request.Path
-        };
-    }
+    //public ProblemDetails Wrap<T>(ResultObjectDto<T> retur)
+    //{
+    //    return new ProblemDetails
+    //    {
+    //        Type = "application/json",
+    //        Title = "Fel inträffade vid bearbetning.",
+    //        Detail = retur.Message,
+    //        Status = retur.StatusCode,
+    //        Instance = HttpContext.Request.Path
+    //    };
+    //}
 
 
     // GET: api/TournamentDetails/5
@@ -123,10 +120,12 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 
         //var dto = 
         var retur = await _serviceManager.TournamentService.GetAsync(id, showGames);
-        if (!retur.IsSuccess) 
-            return NotFound(Wrap(retur));
-
-            return Ok(retur.Data);
+        if (!retur.Success)
+        {
+            //Add2Header(retur.Paginering);
+            return ProcessError(retur);
+        }
+        return Ok(retur.GetOkResult<TournamentDto>());
     }
 
     // PUT: api/TournamentDetails/5
@@ -147,13 +146,14 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
             return BadRequest();
         }
         var status = await _serviceManager.TournamentService.UpdateAsync(dto);
-        if (status.IsSuccess)
+        if (status.Success)
         {
             return NoContent();
         }
         else
         {
-            return StatusCode(status.StatusCode, Wrap(status));
+            //return StatusCode(status.StatusCode, Wrap(status));
+            return ProcessError(status);
         }
 
         //var tournamentExist = await _context.TournamentDetails.SingleOrDefaultAsync(t=>t.Id == id);
@@ -200,7 +200,7 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
     // POST: api/TournamentDetails
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentCreateDto dto)
+    public async Task<ActionResult<TournamentUpdateDto>> PostTournamentDetails(TournamentCreateDto dto)
     {
         TryValidateModel(dto);
         if (!ModelState.IsValid)
@@ -209,13 +209,16 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
         }
 
         var status = await _serviceManager.TournamentService.CreateAsync(dto);
-        if (!status.IsSuccess )
+        if (!status.Success )
         {
-            return StatusCode(status.StatusCode, Wrap(status));
+            //return StatusCode(status.StatusCode, Wrap(status));
+            return ProcessError(status);
+
         }
         else
         {
-            return CreatedAtAction(nameof(GetTournamentDetails), new { id = status.Id }, status.Data);
+            var data = status.GetOkResult<TournamentUpdateDto>();
+            return CreatedAtAction(nameof(GetTournamentDetails), new { id = data.Id }, data );
 
         }
         //var torment = _mapper.Map<TournamentDetails>(dto);
@@ -272,14 +275,15 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 
         var retur = await _serviceManager.TournamentService.DeleteAsync(id);
 
-        if(retur.IsSuccess)
+        if (retur.Success)
             return NoContent();
         else
-            return StatusCode(retur.StatusCode);
+            return ProcessError(retur);
+            //return StatusCode(retur.StatusCode);
     }
 
     [HttpPatch("{tournamentId}")]
-    public async Task<ActionResult<TournamentDto>> PatchTournament(int tournamentId, JsonPatchDocument<TournamentUpdateDto> patchDocument)
+    public async Task<ActionResult<TournamentUpdateDto>> PatchTournament(int tournamentId, JsonPatchDocument<TournamentUpdateDto> patchDocument)
     {
         if (patchDocument is null) return BadRequest("No patchdocument");
 
@@ -312,14 +316,17 @@ public class TournamentDetailsController(IServiceManager _serviceManager) : Cont
 //        var returDto = _mapper.Map<TournamentDto>(tournamentToPatch);
 
         var retur = await _serviceManager.TournamentService.UpdateAsync(tournamentId, patchDocument);
-        if (retur.IsSuccess)
+        if (retur.Success)
         {
-            return CreatedAtAction(nameof(GetTournamentDetails), new { id = retur.Id }, retur.Data);
+            var data = retur.GetOkResult<TournamentUpdateDto>();
+            return CreatedAtAction(nameof(GetTournamentDetails), new { id = data.Id }, data);
 
         }
         else
         {
-            return StatusCode(retur.StatusCode,Wrap(retur));
+            //return StatusCode(retur.StatusCode,Wrap(retur));
+            return ProcessError(retur);
+        //    return ProcessError(status);
         }
             //return NoContent();
             //return CreatedAtAction(nameof(GetTournamentDetails), new { id = retur.Id }, retur.Data);
