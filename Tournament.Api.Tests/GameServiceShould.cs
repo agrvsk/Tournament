@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace Tournament.Api.Tests;
 
-public class GamesShould
+public class GameServiceShould
 {
-    //[Fact]
-    public void Test1()
-    {
-
-    }
 }

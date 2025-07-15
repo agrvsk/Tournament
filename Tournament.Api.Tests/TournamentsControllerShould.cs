@@ -9,6 +9,7 @@ using AutoMapper;
 using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ using static Tournaments.Presentation.Controllers.TournamentDetailsController;
 
 namespace Tournament.Api.Tests;
 
-public class TournamentsShould
+public class TournamentsControllerShould
 {
     private TournamentDetailsController sut;
     private Mock<IServiceManager> MoqServiceManager;
@@ -40,7 +41,7 @@ public class TournamentsShould
     private Mock<ITournamentUoW> MoqUow;
     private Mock<ITournamentRepository> MoqRepo;
 
-    public TournamentsShould()
+    public TournamentsControllerShould()
     {
         //---------------------------------------------------------------
         //Repository-Layer
@@ -95,6 +96,14 @@ public class TournamentsShould
         sut.ControllerContext = controllerContext;
 
     }
+    /*
+    Task<ApiBaseResponse> GetAllAsync(TournamentRequestParams tParams);
+    Task<ApiBaseResponse> GetAsync(int id, bool showGames = false);
+    Task<ApiBaseResponse> CreateAsync(TournamentCreateDto create);
+    Task<ApiBaseResponse> UpdateAsync(TournamentUpdateDto update);
+    Task<ApiBaseResponse> UpdateAsync(int Id, JsonPatchDocument<TournamentUpdateDto> patchDocument);
+    Task<ApiBaseResponse> DeleteAsync(int id);
+    */
 
     [Fact]
     public async Task GetTournamentDetails_ShouldReturnAllTournaments()
@@ -122,7 +131,38 @@ public class TournamentsShould
         Assert.Equal(Tournaments4Test.Count(), items.Count()  );
     }
 
+    [Theory]
+    [InlineData(1,  true)]     //Ok
+    [InlineData(2,  true)]     //Ok
+    [InlineData(3,  false)]    //Data not found - TournamentNotFoundException()
+    public async Task GetTournamentDetails_ShouldReturnTournament(int Id, bool exp)
+    {
+        //Arrange - Real Service
+        MoqServiceManager.Setup(o => o.TournamentService).Returns(RealService);
+        TournamentDetails x = Tournaments4Test.Where(x => x.Id == Id).SingleOrDefault();
+        MoqRepo.Setup(x => x.GetAsync(It.IsAny<int>(), false)).ReturnsAsync(x);
 
+
+        // Asserts
+        if (exp)
+        {
+            //Act
+            var result = await sut.GetTournamentDetails(Id, showGames: false);
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var obj = Assert.IsType<TournamentDto>(okObjectResult.Value);
+            Assert.Equal(x.Title, obj.Title);
+            //var okObjectResult = Assert.IsAssignableFrom<ApiBaseResponse>(result.Result);
+            //var items = Assert.IsType<IEnumerable<TournamentDto>>(okObjectResult.Value);
+            //var items = Assert.IsAssignableFrom<IEnumerable<TournamentDto>>(okObjectResult.Value);
+            //Assert.Equal(Tournaments4Test.Count(), items.Count());
+        }
+        else
+        {
+            //Act
+            var result = await Assert.ThrowsAsync<TournamentNotFoundException>(() => sut.GetTournamentDetails(Id, showGames: false));
+        }
+    }
 
     [Theory]
     [InlineData(1, 3, "Titel 1", false)]    //Dto invalid

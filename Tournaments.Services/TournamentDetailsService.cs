@@ -152,6 +152,17 @@ public class TournamentDetailsService(ITournamentUoW _uow, IMapper _mapper) : IT
         }
         var dto = _mapper.Map<TournamentUpdateDto>(tournament);
 
+        patchDocument.ApplyTo(dto);
+//      patchDocument.ApplyTo(dto, ModelState);
+
+        var context = new ValidationContext(dto, null, null);
+        var fel = new List<ValidationResult>();
+        var ok = Validator.TryValidateObject(dto, context, fel, validateAllProperties: true);
+        if (!ok)
+        {
+            ValidationResult xx = fel[0];
+            throw new ValidationException(xx.ErrorMessage);
+        }
         //TryValidateModel(dto);
 
         //if (!ModelState.IsValid)
