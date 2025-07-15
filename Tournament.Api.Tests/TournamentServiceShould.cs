@@ -157,7 +157,7 @@ public class TournamentServiceShould
     [Theory]
     [InlineData( 1, "TESTARE", true, null)]
     [InlineData( 2, "TESTARE", true, null)]
-    [InlineData( 1, "", false, "ValidationException")] 
+    [InlineData( 1, ""       , false, "ValidationException")] 
     [InlineData( 3, "TESTARE", false, "TournamentNotFoundException")]
 
     public async Task UpdateAsync_Shuld(int Id, string newTitle, bool Ok, string ex )

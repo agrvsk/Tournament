@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
@@ -17,11 +18,25 @@ public class AuthController : ControllerBase
     {
         this.serviceManager = serviceManager;
     }
+
     [HttpGet]
+    [Authorize]
+    //[Authorize(Roles = "Admin")]
+    //[AllowAnonymous]
+    //[Authorize(Policy = "AdminPolicy")]
     public async Task<ActionResult<IEnumerable<UserForRegistrationDto>>> GetAllUsers([FromQuery]UserRequestParams uParams) 
     {
-        var result = await serviceManager.AuthService.GetAllUsersAsync(uParams);
-        return Ok(result.GetOkResult<IEnumerable<UserForRegistrationDto>>());
+        if (User?.Identity?.IsAuthenticated ?? false)
+        {
+//            return Ok("Is Auth");
+            var result = await serviceManager.AuthService.GetAllUsersAsync(uParams);
+            return Ok(result.GetOkResult<IEnumerable<UserForRegistrationDto>>());
+        }
+        else
+        {
+            return BadRequest("Is not auth");
+        }
+
     }
 
     [HttpPost]
