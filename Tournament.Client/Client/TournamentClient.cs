@@ -13,7 +13,7 @@ namespace Tournament.Client.Client
         public TournamentClient(HttpClient client)
         {
             this.client = client;
-            client.BaseAddress = new Uri("https://localhost:7273");
+            client.BaseAddress = new Uri("https://localhost:7006");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(json));
             client.Timeout = new TimeSpan(0, 0, 5);
         }

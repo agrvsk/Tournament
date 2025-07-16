@@ -40,6 +40,7 @@ public static class ApplicationBuilderExtensions
                 configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
                 await CreateRolesAsync(new[] { adminRole, gameRole });
+                await CreateUserAsync();
 
                 var torments = GenerateTournaments(4);
                 db.AddRange(torments);
@@ -53,6 +54,17 @@ public static class ApplicationBuilderExtensions
         }
     }
 
+    private static async Task CreateUserAsync()
+    {
+        var usr = await userManager.FindByNameAsync("astrix");
+        if (usr == null)
+        {
+            var u = new User { Name = "astrix", UserName = "astrix", Email = "astrix@astrix.se", Role = adminRole };
+            var result = await userManager.CreateAsync(u, password:"astrix");
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(u, adminRole);
+        }
+    }
     private static async Task CreateRolesAsync(string[] roleNames)
     {
         foreach (var roleName in roleNames)
