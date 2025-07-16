@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Data.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Tournament.Shared.Requests;
 
 namespace Tournament.Data.Repositories;
 

@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
-using Tournament.Core.DTOs;
-using Tournament.Core.Requests;
+using Tournament.Shared.DTOs;
+using Tournament.Shared.Requests;
 
 namespace Tournaments.Presentation.Controllers;
 

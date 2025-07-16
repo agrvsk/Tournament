@@ -14,14 +14,14 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 //using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
 using Tournament.Data.Data;
 using Tournaments.Services;
+using Tournament.Shared.Requests;
 
 
 namespace Tournament.Api.Tests;

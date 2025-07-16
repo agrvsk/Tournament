@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
+using Tournament.Shared.Requests;
 
 namespace Tournaments.Presentation.Controllers;
 

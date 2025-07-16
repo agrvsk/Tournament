@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 

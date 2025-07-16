@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 
 namespace Tournaments.Presentation.Controllers;
 

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Data.Data;
+using Tournament.Shared.Requests;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tournament.Data.Repositories;

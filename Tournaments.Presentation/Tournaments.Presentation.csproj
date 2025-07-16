@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Service.Contracts\Service.Contracts.csproj" />
+    <ProjectReference Include="..\Tournament.Shared\Tournament.Shared.csproj" />
   </ItemGroup>
 
 </Project>

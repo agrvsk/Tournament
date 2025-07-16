@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
+using Tournament.Shared.Requests;
 
 namespace Tournaments.Services;
 

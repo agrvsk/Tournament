@@ -2,12 +2,12 @@
 using System.Diagnostics.Metrics;
 using AutoMapper;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
+using Tournament.Shared.Requests;
 namespace Tournaments.Services;
 
 public class GameService(ITournamentUoW _uow, IMapper _mapper) : IGameService

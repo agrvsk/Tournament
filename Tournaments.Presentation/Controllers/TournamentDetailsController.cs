@@ -19,15 +19,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 //using Microsoft.IdentityModel.Tokens;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using static System.Net.WebRequestMethods;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 //using Tournament.Data.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Tournament.Shared.Requests;
 
 namespace Tournaments.Presentation.Controllers;
 

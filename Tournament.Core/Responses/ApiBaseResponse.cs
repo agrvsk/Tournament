@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tournament.Core.Requests;
+using Tournament.Shared.Requests;
 
 namespace Tournament.Core.Responses;
 

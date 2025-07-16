@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
-using Tournament.Core.DTOs;
-using Tournament.Core.Requests;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Responses;
+using Tournament.Shared.Requests;
 
 namespace Service.Contracts;
 

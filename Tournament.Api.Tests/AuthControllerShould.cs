@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
 using Tournament.Data.Data;
 using Tournaments.Presentation.Controllers;
 using Tournaments.Services;
+using Tournament.Shared.Requests;
 
 namespace Tournament.Api.Tests;
 
@@ -36,7 +36,7 @@ public class AuthControllerShould
         var mockUserStore = new Mock<IUserStore<User>>();
         UserManager = new Mock<UserManager<User>>(mockUserStore.Object, null, null, null, null, null, null, null, null);
     }
-
+    //TESTDATA
     public static IEnumerable<object[]> GetIR()
     {
         yield return new object[] { true,  IdentityResult.Success };
@@ -45,14 +45,11 @@ public class AuthControllerShould
 
     [Theory]
     [MemberData(nameof(GetIR))]
-    [Trait("HEJ","SVEJS")]
-    public async Task RegisterUser(bool Ok, IdentityResult ir)
+//  [Trait("HEJ","SVEJS")]
+    public async Task RegisterUser_Should_Return_201_Or_BadRequest(bool Ok, IdentityResult ir)
     {
         UserForRegistrationDto dto=new UserForRegistrationDto {Name="", Password="", UserName="", Email="", Role="" };
         ServiceManagerMock.Setup(o => o.AuthService.RegisterUserAsync(It.IsAny<UserForRegistrationDto>())).ReturnsAsync( ir );
-
-        //ArgumentNullException  (dto)
-        //IdentityResult.Failed(new IdentityError { Description = "Role does not exist" });
 
         var sut = Sut;
         var res = await sut.RegisterUser(dto);
@@ -66,12 +63,40 @@ public class AuthControllerShould
         {
             var test = Assert.IsType<BadRequestObjectResult>(res);
             var text = Assert.IsAssignableFrom<IEnumerable<IdentityError>>(test.Value);
+            Assert.Equal("Role does not exist", text.SingleOrDefault().Description);
         }
 
     }
-    public async Task Authenticate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+
+    public async Task Authenticate(bool Ok)
     {
-        //UserForAuthDto userForAuthDto
+        TokenDto ddd = new TokenDto (AccessToken:"", RefreshToken:"");
+        ServiceManagerMock.Setup(o => o.AuthService.ValidateUserAsync(It.IsAny<UserForAuthDto>())).ReturnsAsync(Ok);
+        ServiceManagerMock.Setup(o => o.AuthService.CreateTokenAsync(It.IsAny<bool>())).ReturnsAsync(ddd);
+        
+        var sut = Sut;
+        UserForAuthDto dto = null;  // new UserForAuthDto ( UserName: "", PassWord:"" );
+
+        var result = await sut.Authenticate(dto);
+        if (Ok)
+        {
+            var tst = Assert.IsType<OkObjectResult>(result);
+            var txt = Assert.IsType<TokenDto>(tst.Value);
+
+        }
+        else
+        {
+            var tst = Assert.IsType<UnauthorizedResult>(result);
+            Assert.Equal(401, tst.StatusCode);
+            ////tst.StatusCode
+            //tst.
+            //var txt = Assert.IsType<OkObjectResult>(tst.Value);
+
+
+        }
 
         //if (!await serviceManager.AuthService.ValidateUserAsync(userForAuthDto))
         //{
@@ -79,7 +104,7 @@ public class AuthControllerShould
         //}
 
         //// var token = new { Token = await serviceManager.AuthService.CreateTokenAsync() };
-        //TokenDto token = await serviceManager.AuthService.CreateTokenAsync(expireTime: true);
+        //            TokenDto token = await serviceManager.AuthService.CreateTokenAsync(expireTime: true);
 
         //return Ok(token);
 
@@ -127,7 +152,7 @@ public class AuthControllerShould
     
 
     [Fact]
-    public async Task GetAllUsers_IfNotAuth_ShouldReturn400BadRequest()
+    public async Task GetAllUsers_If_Not_Auth_ShouldReturn400BadRequest()
     {
         var httpContextMock = new Mock<HttpContext>();
         UserRequestParams uq = new UserRequestParams();

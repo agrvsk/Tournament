@@ -14,14 +14,14 @@ using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualBasic;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Tournament.Shared.Requests;
 
 namespace Tournaments.Services;
 

@@ -17,11 +17,10 @@ using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
 using Service.Contracts;
-using Tournament.Core.DTOs;
+using Tournament.Shared.DTOs;
 using Tournament.Core.Entities;
 using Tournament.Core.Exceptions;
 using Tournament.Core.Repositories;
-using Tournament.Core.Requests;
 using Tournament.Core.Responses;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
@@ -29,6 +28,7 @@ using Tournaments.Presentation.Controllers;
 using Tournaments.Services;
 using Xunit.Abstractions;
 using static Tournaments.Presentation.Controllers.TournamentDetailsController;
+using Tournament.Shared.Requests;
 
 namespace Tournament.Api.Tests;
 
